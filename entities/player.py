@@ -2,20 +2,12 @@ import pygame
 import os
 import math
 from settings import (
-    PLAYER_SPEED,
-    PLAYER_SIZE,
-    PLAYER_BASE_HEALTH,
-    PLAYER_BASE_ARMOR,
-    PLAYER_BASE_FIRE_RATE,
-    PLAYER_BASE_MAGAZINE,
-    PLAYER_BASE_RESERVE_AMMO,
-    UPGRADE_VALUES,
-    WORLD_WIDTH,
-    WORLD_HEIGHT,
+    PLAYER_SPEED, PLAYER_SIZE, PLAYER_BASE_HEALTH, PLAYER_BASE_ARMOR,
+    PLAYER_BASE_FIRE_RATE, PLAYER_BASE_MAGAZINE, PLAYER_BASE_RESERVE_AMMO,
+    UPGRADE_VALUES, WORLD_WIDTH, WORLD_HEIGHT, PLAYER_MAX_ARMOR
 )
 from utils.helpers import load_image_safe, clean_image_background
 from entities.weapon import Weapon
-
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -26,9 +18,9 @@ class Player(pygame.sprite.Sprite):
         # Estadísticas
         self.health = PLAYER_BASE_HEALTH
         self.max_health = PLAYER_BASE_HEALTH
-        self.armor = PLAYER_BASE_ARMOR
-        self.shield = PLAYER_BASE_ARMOR
-        self.max_shield = max(1, PLAYER_BASE_ARMOR)
+
+        self.shield = PLAYER_BASE_ARMOR  # inicia en 0
+        self.max_shield = PLAYER_MAX_ARMOR  # máximo fijo 100
 
         self.size = PLAYER_SIZE
         self.direction = "front"
@@ -68,7 +60,6 @@ class Player(pygame.sprite.Sprite):
 
     @property
     def x(self): return self.pos.x
-
     @property
     def y(self): return self.pos.y
 
@@ -135,5 +126,5 @@ class Player(pygame.sprite.Sprite):
             self.weapon.max_ammo += value
             self.weapon.current_ammo = self.weapon.max_ammo
         elif upgrade_type == "armadura":
-            self.max_shield += value
+            # Armadura nunca supera 100
             self.shield = min(self.max_shield, self.shield + value)
