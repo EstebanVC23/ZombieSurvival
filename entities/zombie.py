@@ -32,11 +32,13 @@ class Zombie(pygame.sprite.Sprite):
         pygame.draw.circle(self.image, (150,180,40), (self.radius,self.radius), self.radius)
         self.rect = self.image.get_rect(center=(round(self.pos.x), round(self.pos.y)))
 
-        # Sprites vivo
+        # Sprites vivos
         base = os.path.join("zombie","common")
         f = load_image_safe(os.path.join(base, "common_frente.png"))
         b = load_image_safe(os.path.join(base, "common_espalda.png"))
         s = load_image_safe(os.path.join(base, "common_lateral.png"))
+
+        # Siempre definimos frames para evitar AttributeError
         self.frames = {}
         if f and b and s:
             self.frames["front"] = clean_image_background(pygame.transform.scale(f,(self.radius*2,self.radius*2)))
@@ -83,7 +85,7 @@ class Zombie(pygame.sprite.Sprite):
             self.rect.center = (round(self.pos.x), round(self.pos.y))
             self._set_dir(d)
         if self.frames:
-            self.image = self.frames[self.direction]
+            self.image = self.frames.get(self.direction, self.image)
 
         # Colisión jugador
         try:
@@ -108,6 +110,11 @@ class Zombie(pygame.sprite.Sprite):
         if game:
             try: Upgrade.spawn_from_zombie(game.upgrades,self)
             except Exception: pass
+
+            # **Sistema de puntos**: sumar al jugador según el tipo de zombie
+            points = ZOMBIE_UPGRADE_MULTIPLIERS.get(self.type, 1.0) * 10  # 10 puntos base por zombie
+            game.player.score += int(points)
+
         self.dead=True
         self.dead_timer=0.0
         self.fade=0.0
@@ -117,7 +124,8 @@ class Zombie(pygame.sprite.Sprite):
             elif self.direction=="left": rotated=pygame.transform.rotate(self.dead_sprite,-90)
             elif self.direction=="right": rotated=pygame.transform.rotate(self.dead_sprite,90)
             else: rotated=self.dead_sprite
-        else: rotated=self.image.copy()
+        else:
+            rotated=self.image.copy()
         self.dead_image=rotated
         self.radius=1
         self.damage=0

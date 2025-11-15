@@ -38,22 +38,22 @@ BULLET_BASE_LIFETIME = 1.0     # segundos
 ZOMBIE_COMMON_SPEED = 70
 ZOMBIE_COMMON_SIZE = 100
 ZOMBIE_COMMON_HP = 25
-ZOMBIE_COMMON_DAMAGE = 10
+ZOMBIE_COMMON_DAMAGE = 100
 
-ZOMBIE_FAST_SPEED = 130
-ZOMBIE_FAST_SIZE = 35
+ZOMBIE_FAST_SPEED = 180
+ZOMBIE_FAST_SIZE = 70
 ZOMBIE_FAST_HP = 18
-ZOMBIE_FAST_DAMAGE = 8
+ZOMBIE_FAST_DAMAGE = 10
 
 ZOMBIE_TANK_SPEED = 40
-ZOMBIE_TANK_SIZE = 55
+ZOMBIE_TANK_SIZE = 180
 ZOMBIE_TANK_HP = 80
-ZOMBIE_TANK_DAMAGE = 20
+ZOMBIE_TANK_DAMAGE = 30
 
 ZOMBIE_BOSS_SPEED = 55
-ZOMBIE_BOSS_SIZE = 70
-ZOMBIE_BOSS_HP = 250
-ZOMBIE_BOSS_DAMAGE = 35
+ZOMBIE_BOSS_SIZE = 300
+ZOMBIE_BOSS_HP = 300
+ZOMBIE_BOSS_DAMAGE = 60
 
 # ===================================================
 # 🔹 Mejoras (Upgrades)
@@ -64,7 +64,7 @@ UPGRADE_ICON_SIZE = 72
 UPGRADE_VALUES = {
     "vida": 25,
     "cadencia": 10,
-    "velocidad": 40,
+    "velocidad": 5,
     "balas": 20,
     "cargador": 4,
     "armadura": 10
@@ -94,6 +94,15 @@ ZOMBIE_UPGRADE_MULTIPLIERS = {
 UPGRADE_FALL_SPEED = 150.0
 UPGRADE_FALL_DECAY = 0.95
 UPGRADE_FALL_DURATION = 0.7
+
+# Puntos por matar cada tipo de zombie
+ZOMBIE_SCORE_VALUES = {
+    "common": 10,
+    "fast": 15,
+    "tank": 40,
+    "boss": 200
+}
+
 
 # ===================================================
 # Colores
