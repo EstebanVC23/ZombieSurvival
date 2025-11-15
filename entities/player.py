@@ -18,9 +18,8 @@ class Player(pygame.sprite.Sprite):
         # Estadísticas
         self.health = PLAYER_BASE_HEALTH
         self.max_health = PLAYER_BASE_HEALTH
-
-        self.shield = PLAYER_BASE_ARMOR  # inicia en 0
-        self.max_shield = PLAYER_MAX_ARMOR  # máximo fijo 100
+        self.shield = PLAYER_BASE_ARMOR
+        self.max_shield = PLAYER_MAX_ARMOR
 
         self.size = PLAYER_SIZE
         self.direction = "front"
@@ -56,6 +55,7 @@ class Player(pygame.sprite.Sprite):
             reload_time=None
         )
 
+        # Puntuación
         self.score = 0
 
     @property
@@ -126,5 +126,4 @@ class Player(pygame.sprite.Sprite):
             self.weapon.max_ammo += value
             self.weapon.current_ammo = self.weapon.max_ammo
         elif upgrade_type == "armadura":
-            # Armadura nunca supera 100
             self.shield = min(self.max_shield, self.shield + value)

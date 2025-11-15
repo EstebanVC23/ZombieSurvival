@@ -95,6 +95,15 @@ UPGRADE_FALL_SPEED = 150.0
 UPGRADE_FALL_DECAY = 0.95
 UPGRADE_FALL_DURATION = 0.7
 
+# Puntos por matar cada tipo de zombie
+ZOMBIE_SCORE_VALUES = {
+    "common": 10,
+    "fast": 15,
+    "tank": 40,
+    "boss": 200
+}
+
+
 # ===================================================
 # Colores
 # ===================================================
