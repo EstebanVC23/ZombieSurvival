@@ -101,10 +101,9 @@ def main_menu():
                 for rect, text in menu_rects:
                     if rect.collidepoint(mouse_pos):
                         if text == "START GAME":
-                            pygame.mixer.music.set_volume(0.2)
                             game = Game()
+                            game.load_resources()
                             game.run()
-                            pygame.mixer.music.set_volume(0.6)
                         elif text == "SETTINGS":
                             print("[INFO] Configuración (pendiente)")
                         elif text == "HIGH SCORES":

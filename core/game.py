@@ -11,6 +11,7 @@ from ui.pause_menu import PauseMenu
 from ui.player_card import UIManager
 from ui.lose_menu import LoseMenu
 from utils.helpers import load_font, load_cursor, load_music
+from ui.loading_screen import LoadingScreen
 
 class Game:
     """Clase principal del juego."""
@@ -37,6 +38,7 @@ class Game:
         self.paused = False
         self.return_to_main_menu = False
         self.lose_menu = None
+        self.loading_screen = LoadingScreen(self.screen, self.screen_width, self.screen_height)
 
         self.cursor_game = load_cursor("ui/cursor_game.png", (32, 32))
         self.cursor_menu = load_cursor("ui/cursor_menu.png", (20, 20))
@@ -185,3 +187,34 @@ class Game:
         for _ in range(8):
             pos = (random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
             self.zombies.add(Zombie(pos, "common"))
+            
+    
+    def load_resources(self):
+        """Muestra pantalla de carga, pausa música, carga recursos y reanuda música."""
+        # Pausar música
+        if pygame.mixer.get_init() and pygame.mixer.music.get_busy():
+            pygame.mixer.music.pause()
+
+        # Mostrar pantalla de carga
+        self.loading_screen.draw()
+        pygame.display.flip()
+
+        # Simula carga de recursos (reemplazar con carga real)
+        resources = [
+            "player",
+            "zombies",
+            "bullets",
+            "upgrades",
+            "effects",
+            "HUD",
+            "camera",
+            "waves"
+        ]
+        total = len(resources)
+        for i, r in enumerate(resources, 1):
+            pygame.time.delay(200)  # Simula tiempo de carga
+            self.loading_screen.update_progress(i / total)
+
+        # Reanudar música
+        if pygame.mixer.get_init():
+            pygame.mixer.music.unpause()
