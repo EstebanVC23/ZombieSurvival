@@ -10,7 +10,6 @@
 - Testeo general y pulido final
 - Optimización si es necesaria
 - Empaquetado final del juego
-- Pantalla de carga
 - Final por completar todos los niveles
 - Pantalla de puntuaciones altas
 - algunas opciones en el menú (sonido, controles, etc)

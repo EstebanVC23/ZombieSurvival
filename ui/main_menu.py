@@ -1,20 +1,21 @@
 import pygame
 import sys
 from utils.helpers import load_image_safe
-from core.game import Game  # Importa tu clase principal del juego
+from core.game import Game
+from ui.buttons import ButtonTextOnly, Buttons
 
 pygame.init()
 
-# Configuración de pantalla
+# --- Configuración de pantalla ---
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 700
 FPS = 60
 
-# Colores
+# --- Colores ---
 WHITE = (240, 240, 240)
 HIGHLIGHT = (0, 255, 180)
 
-# Ventana principal
+# --- Ventana ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Zombie Survival: Endless Apocalypse")
 clock = pygame.time.Clock()
@@ -38,14 +39,6 @@ except:
     print("[WARN] No se encontró la fuente Press Start 2P, usando fuente por defecto.")
     base_font = pygame.font.Font(None, 28)
 
-# --- Menú ---
-menu_items = ["START GAME", "SETTINGS", "HIGH SCORES", "EXIT"]
-menu_positions = [(SCREEN_WIDTH // 2, 400),
-                  (SCREEN_WIDTH // 2, 460),
-                  (SCREEN_WIDTH // 2, 520),
-                  (SCREEN_WIDTH // 2, 580)]
-menu_rects = []
-
 # --- Cursor ---
 def load_cursor(path, size=(32, 32)):
     img = load_image_safe(path)
@@ -64,25 +57,25 @@ def load_cursor(path, size=(32, 32)):
 pygame.mouse.set_visible(False)
 cursor_menu = load_cursor("ui/cursor_menu.png", (20, 20))
 
-# --- Dibujar menú ---
-def draw_menu(mouse_pos):
-    screen.blit(background, (0, 0))
-    menu_rects.clear()
+# --- Botones del menú ---
+menu_items = ["START GAME", "SETTINGS", "HIGH SCORES", "EXIT"]
+menu_positions = [(SCREEN_WIDTH // 2, 400),
+                  (SCREEN_WIDTH // 2, 460),
+                  (SCREEN_WIDTH // 2, 520),
+                  (SCREEN_WIDTH // 2, 580)]
 
-    for i, text in enumerate(menu_items):
-        pos = menu_positions[i]
-        hovered = abs(mouse_pos[0] - pos[0]) < 150 and abs(mouse_pos[1] - pos[1]) < 25
-        color = HIGHLIGHT if hovered else WHITE
-        size = 36 if hovered else 28
-        font = pygame.font.Font(font_path, size) if pygame.font.get_init() else pygame.font.Font(None, size)
-        label = font.render(text, True, color)
-        rect = label.get_rect(center=pos)
-        menu_rects.append((rect, text))
-        screen.blit(label, rect)
+buttons_list = [
+    ButtonTextOnly(text, pos, font_path, base_size=28, hover_size=32, 
+                   text_color=WHITE, hover_color=HIGHLIGHT)
+    for text, pos in zip(menu_items, menu_positions)
+]
+menu_buttons = Buttons(screen, buttons_list)
 
-# --- Bucle principal ---
+# --- Main Menu ---
 def main_menu():
     running = True
+
+    # Música opcional
     sound_path = "sounds/ambient.mp3"
     if pygame.mixer and load_image_safe(sound_path):
         pygame.mixer.init()
@@ -92,32 +85,33 @@ def main_menu():
 
     while running:
         mouse_pos = pygame.mouse.get_pos()
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                for rect, text in menu_rects:
-                    if rect.collidepoint(mouse_pos):
-                        if text == "START GAME":
-                            game = Game()
-                            game.load_resources()
-                            game.run()
-                        elif text == "SETTINGS":
-                            print("[INFO] Configuración (pendiente)")
-                        elif text == "HIGH SCORES":
-                            print("[INFO] Puntuaciones (pendiente)")
-                        elif text == "EXIT":
-                            pygame.quit()
-                            sys.exit()
+                clicked = menu_buttons.handle_click(mouse_pos)
+                if clicked == "START GAME":
+                    game = Game()
+                    game.load_resources()
+                    game.run()
+                elif clicked == "SETTINGS":
+                    print("[INFO] Configuración (pendiente)")
+                elif clicked == "HIGH SCORES":
+                    print("[INFO] Puntuaciones (pendiente)")
+                elif clicked == "EXIT":
+                    pygame.quit()
+                    sys.exit()
 
-        draw_menu(mouse_pos)
+        # --- Dibujar ---
+        screen.blit(background, (0, 0))
+        menu_buttons.draw()
         if cursor_menu:
-            screen.blit(cursor_menu, (mouse_pos[0] - 8, mouse_pos[1] - 8))
+            screen.blit(cursor_menu, (mouse_pos[0]-8, mouse_pos[1]-8))
 
         pygame.display.flip()
         clock.tick(FPS)
 
+# --- Ejecución ---
 if __name__ == "__main__":
     main_menu()
