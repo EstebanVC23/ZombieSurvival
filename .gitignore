@@ -1,0 +1,44 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# VS Code settings
+.vscode/
+
+# PyInstaller / build files
+build/
+dist/
+*.spec
+
+# Logs
+*.log
+
+# Byte-compiled / optimized / DLL files
+*.so
+
+# Test / coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# mypy, pylint, etc
+.mypy_cache/
+.pytype/
+.pylint.d/
+
+# Local config files
+*.env
+*.local
