@@ -21,8 +21,6 @@ FPS = 60
 WORLD_WIDTH = 4000
 WORLD_HEIGHT = 4000
 
-<<<<<<< HEAD
-=======
 # Player
 PLAYER_SPEED = 200
 PLAYER_SIZE = 100
@@ -33,15 +31,10 @@ PLAYER_BASE_FIRE_RATE = 100  # disparos por minuto
 PLAYER_BASE_MAGAZINE = 12
 PLAYER_BASE_RESERVE_AMMO = 60
 
->>>>>>> main
 # ===================================================
 # JUGADOR (PLAYER)
 # ===================================================
 
-<<<<<<< HEAD
-# --- Movimiento ---
-PLAYER_SPEED = 250  # Velocidad de movimiento en píxeles/segundo
-=======
 WEAPON_BASE_DAMAGE = 14        # Daño por bala
 WEAPON_BASE_RPM = 10          # Disparos por minuto (cadencia), falta implementarlo bien
 WEAPON_BASE_MAGAZINE = 16      # Balas por cargador
@@ -50,23 +43,15 @@ WEAPON_BASE_RELOAD_TIME = 2.0  # Tiempo de recarga (segundos), falta implementar
 WEAPON_BULLET_SPEED = 1000      # Velocidad de la bala
 BULLET_BASE_LIFETIME = 1.0     # segundos
 # ===================================================
->>>>>>> main
 
 # --- Apariencia ---
 PLAYER_SIZE = 100  # Tamaño del sprite del jugador
 
-<<<<<<< HEAD
-# --- Salud y Defensa ---
-PLAYER_BASE_HEALTH = 100      # Salud inicial del jugador
-PLAYER_BASE_ARMOR = 0         # Armadura inicial (absorbe daño antes que la vida)
-PLAYER_MAX_ARMOR = 100        # Capacidad máxima de armadura
-=======
 # Zombies
 ZOMBIE_COMMON_SPEED = 70
 ZOMBIE_COMMON_SIZE = 100
 ZOMBIE_COMMON_HP = 25
 ZOMBIE_COMMON_DAMAGE = 15
->>>>>>> main
 
 # --- Arma inicial ---
 PLAYER_BASE_FIRE_RATE = 100   # RPM inicial (disparos por minuto) - BALANCEADO
@@ -193,28 +178,28 @@ ZOMBIE_RARITY_DROP_BONUS = {
 
 ZOMBIE_UPGRADE_DROP_SYSTEM = {
     "common": {
-        "base_chance": 65,       # 65% de dropear algo (generoso para mantener munición)
+        "base_chance": 30,       # 30% de dropear algo (generoso para mantener munición)
         "min_drops": 1,          # Mínimo 1 carta si dropea
         "max_drops": 2,          # Máximo 2 cartas
-        "multi_drop_chance": 25  # 25% de que salga la 2da carta
+        "multi_drop_chance": 10  # 25% de que salga la 2da carta
     },
     "fast": {
-        "base_chance": 75,       # 75% de drop
+        "base_chance": 50,       # 75% de drop
         "min_drops": 1,
         "max_drops": 3,
-        "multi_drop_chance": 40  # 40% de cartas extra
+        "multi_drop_chance": 30  # 40% de cartas extra
     },
     "tank": {
         "base_chance": 90,       # 90% de drop (casi siempre)
         "min_drops": 2,          # Mínimo 2 cartas
         "max_drops": 4,
-        "multi_drop_chance": 50  # 50% de cartas extra
+        "multi_drop_chance": 40  # 50% de cartas extra
     },
     "boss": {
         "base_chance": 100,      # 100% siempre dropea
         "min_drops": 5,          # Mínimo 5 cartas (recompensa generosa)
         "max_drops": 10,         # Máximo 10 cartas
-        "multi_drop_chance": 70  # 70% de cartas extra
+        "multi_drop_chance": 50  # 70% de cartas extra
     }
 }
 
@@ -231,8 +216,8 @@ UPGRADE_VALUES = {
     "vida_extra": 15,    # +15 HP máximos (y actuales)
     "armadura": 20,      # +20 armadura
     "daño": 3,           # +3 daño por bala
-    "cadencia": 10,      # +10 RPM (más disparos por minuto)
-    "velocidad": 15,     # +15 píxeles/segundo de movimiento
+    "cadencia": 5,       # +5 RPM (más disparos por minuto)
+    "velocidad": 1,     # +15 píxeles/segundo de movimiento
     "balas": 25,         # +25 balas de reserva (CRÍTICO - valor alto)
     "cargador": 4        # +4 capacidad del cargador
 }
