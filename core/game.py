@@ -92,7 +92,6 @@ class Game:
             pos = self._spawn_initial_far(min_distance)
             self.zombies.add(Zombie(pos, "common", rarity="common"))
 
-
     # ============================================================
     def _spawn_initial_far(self, min_distance):
         """Genera posiciones iniciales lejos del jugador."""
@@ -151,7 +150,6 @@ class Game:
 
     # ============================================================
     def update(self, dt):
-
         self.player.update(dt, self)
 
         # Si muere → menú de muerte
