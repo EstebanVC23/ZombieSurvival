@@ -185,8 +185,8 @@ UPGRADE_SPAWN_CHANCE = {
     "vida": 10,
     "cadencia": 10,
     "velocidad": 10,
-    "balas": 10,
-    "cargador": 10,
+    "balas": 20,
+    "cargador": 20,
     "armadura": 10
 }
 
