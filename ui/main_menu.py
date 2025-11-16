@@ -16,7 +16,7 @@ WHITE = (240, 240, 240)
 HIGHLIGHT = (0, 255, 180)
 
 # --- Ventana ---
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.NOFRAME)
 pygame.display.set_caption("Zombie Survival: Endless Apocalypse")
 clock = pygame.time.Clock()
 

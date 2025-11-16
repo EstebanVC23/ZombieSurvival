@@ -1,5 +1,6 @@
 # launcher.py
 '''Falta por:
+- agregar card de mejora de cantidad de vida y aumento de daño de arma
 - Ajustar daños y vida de zombies (settings.py)
 - Ajustar puntos por matar zombies (settings.py)
 - Generar mundos por cada narrativa en el juego(niveles)
