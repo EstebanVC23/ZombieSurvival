@@ -77,8 +77,8 @@ class Weapon:
         self.rpm=min(1200,float(self.rpm)+float(value))
         self.cooldown=60.0/max(1.0,self.rpm)
 
-    def apply_damage_bonus(self,value):
-        self.damage+=value
+    def apply_damage_bonus(self, value):
+        self.damage += value
 
     def apply_reload_bonus(self,factor):
         self.reload_time*=factor

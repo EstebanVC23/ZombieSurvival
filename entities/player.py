@@ -127,3 +127,8 @@ class Player(pygame.sprite.Sprite):
             self.weapon.current_ammo = self.weapon.max_ammo
         elif upgrade_type == "armadura":
             self.shield = min(self.max_shield, self.shield + value)
+        elif upgrade_type == "daño":
+            self.weapon.apply_damage_bonus(value)
+        elif upgrade_type == "vida_extra": 
+            self.max_health += value
+            self.health += value 

@@ -6,14 +6,12 @@ from settings import (
     ZOMBIE_FAST_HP, ZOMBIE_FAST_SPEED, ZOMBIE_FAST_SIZE, ZOMBIE_FAST_DAMAGE,
     ZOMBIE_TANK_HP, ZOMBIE_TANK_SPEED, ZOMBIE_TANK_SIZE, ZOMBIE_TANK_DAMAGE,
     ZOMBIE_BOSS_HP, ZOMBIE_BOSS_SPEED, ZOMBIE_BOSS_SIZE, ZOMBIE_BOSS_DAMAGE,
-
     ZOMBIE_RARITY_CHANCE, ZOMBIE_RARITY_MULT, ZOMBIE_RARITY_UPGRADE_COUNT,
     ZOMBIE_RARITY_SCORE_MULT, ZOMBIE_RARITY_DROP_BONUS,
-    ZOMBIE_SCORE_VALUES, UPGRADE_SPAWN_CHANCE_TOTAL,
+    ZOMBIE_SCORE_VALUES,
     WORLD_WIDTH, WORLD_HEIGHT
 )
 from utils.helpers import load_image_safe, clean_image_background, load_sound
-from core.upgrade import Upgrade
 
 
 class Zombie(pygame.sprite.Sprite):
@@ -180,7 +178,7 @@ class Zombie(pygame.sprite.Sprite):
             self.sound.set_volume(vol)
 
     # =======================================================
-    # RECIBIR DAÑO
+    # RECIBIR DAÑO (MÉTODO COMPLETO CORREGIDO)
     # =======================================================
     def take_damage(self, dmg, game=None):
         if self.dead: return
@@ -194,11 +192,21 @@ class Zombie(pygame.sprite.Sprite):
             try: self.sound.stop()
             except Exception: pass
 
-        # Drop y score
+        # ✅ DROP Y SCORE CON SISTEMA UNIFICADO
         if game:
-            drop_chance = UPGRADE_SPAWN_CHANCE_TOTAL[self.type]+self.drop_bonus
-            if random.random() < drop_chance/100:
-                Upgrade.spawn_from_zombie(game.upgrades, self)
+            from settings import ZOMBIE_UPGRADE_DROP_SYSTEM
+            from core.upgrade import Upgrade
+            
+            drop_config = ZOMBIE_UPGRADE_DROP_SYSTEM.get(self.type)
+            
+            if drop_config:
+                # Aplicar bonus de rareza a la probabilidad base
+                drop_chance = drop_config["base_chance"] + self.drop_bonus
+                
+                # Check si dropea algo
+                if random.random() * 100 < drop_chance:
+                    Upgrade.spawn_from_zombie(game.upgrades, self)
+            
             game.player.score += self.score_value
 
         # Mostrar sprite muerto
@@ -212,7 +220,7 @@ class Zombie(pygame.sprite.Sprite):
 
         self.dead_image = rotated
         self.damage = 0
-        self.radius = 0  # evitar colisiones
+        self.radius = 0 # Evitar más colisiones
 
     # =======================================================
     # AUXILIARES

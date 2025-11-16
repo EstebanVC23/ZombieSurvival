@@ -9,7 +9,7 @@ from settings import (
     UPGRADE_FALL_SPEED,
     UPGRADE_FALL_DECAY,
     UPGRADE_FALL_DURATION,
-    ZOMBIE_UPGRADE_MULTIPLIERS,
+    ZOMBIE_UPGRADE_DROP_SYSTEM,
 )
 from utils.helpers import load_image_safe, clean_image_background
 
@@ -87,20 +87,28 @@ class Upgrade(pygame.sprite.Sprite):
     # ==========================================================
     @staticmethod
     def spawn_from_zombie(group, zombie):
-        """Genera upgrades al morir un zombie según probabilidades."""
-        multiplier = ZOMBIE_UPGRADE_MULTIPLIERS.get(zombie.type, 0.0)
-        if multiplier <= 0.0:
+        """Genera upgrades según el nuevo sistema unificado."""
+        drop_config = ZOMBIE_UPGRADE_DROP_SYSTEM.get(zombie.type)
+        if not drop_config:
+            print(f"[WARN] No drop config for zombie type '{zombie.type}'")
             return
 
         origin = zombie.rect.center if hasattr(zombie, "rect") else tuple(zombie.pos)
-
-        guaranteed = int(multiplier)
-        extra_prob = multiplier - guaranteed
-        total_drops = guaranteed + (1 if random.random() < extra_prob else 0)
-
-        if total_drops == 0 and random.random() > multiplier:
-            return
-
+        
+        # ✅ Calcular cantidad de drops
+        min_drops = drop_config["min_drops"]
+        max_drops = drop_config["max_drops"]
+        multi_chance = drop_config["multi_drop_chance"]
+        
+        # Siempre dropea el mínimo garantizado
+        total_drops = min_drops
+        
+        # Intentar dropear cartas adicionales
+        for _ in range(max_drops - min_drops):
+            if random.random() * 100 < multi_chance:
+                total_drops += 1
+        
+        # ✅ Generar cada upgrade
         for i in range(total_drops):
             upgrade_type = Upgrade.select_random_upgrade()
             if upgrade_type:
@@ -110,7 +118,8 @@ class Upgrade(pygame.sprite.Sprite):
                 distance = random.uniform(40, 75)
                 u.start_fall(angle_rad=angle, speed=speed, max_distance=distance)
                 group.add(u)
-
+                print(f"[Upgrade] Dropped '{upgrade_type}' from {zombie.rarity.upper()} {zombie.type} (card {i+1}/{total_drops})")
+                
     # ==========================================================
     # 🔹 Selección ponderada
     # ==========================================================
