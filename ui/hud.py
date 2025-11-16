@@ -17,7 +17,7 @@ class HUD:
                                        position="topright", update_interval_ms=100)
 
     def draw(self, surface, player, wave_manager):
-        # Barra de vida
+        # Barra de vida del jugador
         max_hp = getattr(player, "max_health", 100)
         bar_width, bar_height = 250, 18
         x, y = 30, 30
@@ -36,10 +36,10 @@ class HUD:
             shield_y = y + 32
             pygame.draw.rect(surface, (0, 0, 0), (x-3, shield_y-3, bar_width+6, bar_height+6))
             pygame.draw.rect(surface, (40, 40, 60), (x, shield_y, bar_width, bar_height))
-            shield_color = (80, 80, 255) if shield_ratio>0.3 else (120,120,255)
+            shield_color = (80, 80, 255) if shield_ratio > 0.3 else (120, 120, 255)
             pygame.draw.rect(surface, shield_color, (x, shield_y, int(bar_width*shield_ratio), bar_height))
             shield_text = self.font.render(f"SHIELD {int(player.shield)}/{int(max_shield)}", True, (180, 180, 255))
-            surface.blit(shield_text, (x+260, shield_y))
+            surface.blit(shield_text, (x + 260, shield_y))
 
         # Score, wave y zombies left
         surface.blit(self.font.render(f"SCORE: {player.score}", True, (255,255,255)), (30,100))
@@ -71,15 +71,26 @@ class HUD:
                 reload_text = self.font.render("RELOADING...", True, (200,200,255))
                 surface.blit(reload_text, (ammo_x+110, ammo_y-30))
 
-        # Health bars de zombies
+        # ===============================
+        # Health bars y nivel de zombies
+        # ===============================
         camera = getattr(wave_manager.game,"camera",None)
         screen_rect = surface.get_rect()
         for z in wave_manager.game.zombies:
-            if getattr(z,"dead",False): continue
-            if not hasattr(z,"hp") or not hasattr(z,"rect"): continue
-            try: z_screen_rect = camera.apply(z.rect) if camera else z.rect
-            except Exception: z_screen_rect = z.rect
-            if not screen_rect.colliderect(z_screen_rect): continue
+            if getattr(z,"dead",False): 
+                continue
+            if not hasattr(z,"hp") or not hasattr(z,"rect"): 
+                continue
+
+            try: 
+                z_screen_rect = camera.apply(z.rect) if camera else z.rect
+            except Exception: 
+                z_screen_rect = z.rect
+
+            if not screen_rect.colliderect(z_screen_rect): 
+                continue
+
+            # Barra de vida
             zx, zy = z_screen_rect.centerx, z_screen_rect.bottom+4
             max_z_hp = z.TYPE_STATS.get(z.type,{}).get("hp", getattr(z,"hp",1))
             hp_ratio = max(0.0, min(1.0, (z.hp/max_z_hp) if max_z_hp else 0.0))
@@ -90,6 +101,21 @@ class HUD:
             col = (220,40,40) if hp_ratio<0.3 else (255,180,40) if hp_ratio<0.6 else (60,220,60)
             pygame.draw.rect(surface,col,(zx-bar_w//2, zy, int(bar_w*hp_ratio), bar_h))
 
+            # Nivel sobre la cabeza
+            level_text = f"Lv {getattr(z,'level',1)}"
+            rarity_color_map = {
+                "common": (255,255,255),
+                "uncommon": (50,220,50),
+                "rare": (50,150,255),
+                "epic": (180,50,255),
+                "legendary": (255,180,50)
+            }
+            txt_color = rarity_color_map.get(getattr(z,'rarity','common'), (255,255,255))
+            txt_surf = self.font.render(level_text, True, txt_color)
+            txt_rect = txt_surf.get_rect(center=(z_screen_rect.centerx, z_screen_rect.top - 10))
+            surface.blit(txt_surf, txt_rect)
+
         # Minimapa
         self._ensure_minimap(wave_manager)
-        if self.minimap: self.minimap.draw(surface)
+        if self.minimap: 
+            self.minimap.draw(surface)
