@@ -21,20 +21,52 @@ FPS = 60
 WORLD_WIDTH = 4000
 WORLD_HEIGHT = 4000
 
+<<<<<<< HEAD
+=======
+# Player
+PLAYER_SPEED = 200
+PLAYER_SIZE = 100
+PLAYER_BASE_HEALTH = 100
+PLAYER_BASE_ARMOR = 0  # Inicio con 0
+PLAYER_MAX_ARMOR = 100  # máximo fijo
+PLAYER_BASE_FIRE_RATE = 100  # disparos por minuto
+PLAYER_BASE_MAGAZINE = 12
+PLAYER_BASE_RESERVE_AMMO = 60
+
+>>>>>>> main
 # ===================================================
 # JUGADOR (PLAYER)
 # ===================================================
 
+<<<<<<< HEAD
 # --- Movimiento ---
 PLAYER_SPEED = 250  # Velocidad de movimiento en píxeles/segundo
+=======
+WEAPON_BASE_DAMAGE = 14        # Daño por bala
+WEAPON_BASE_RPM = 10          # Disparos por minuto (cadencia), falta implementarlo bien
+WEAPON_BASE_MAGAZINE = 16      # Balas por cargador
+WEAPON_BASE_RESERVE_AMMO = 60  # Balas de reserva
+WEAPON_BASE_RELOAD_TIME = 2.0  # Tiempo de recarga (segundos), falta implementarlo bien en el codigo
+WEAPON_BULLET_SPEED = 1000      # Velocidad de la bala
+BULLET_BASE_LIFETIME = 1.0     # segundos
+# ===================================================
+>>>>>>> main
 
 # --- Apariencia ---
 PLAYER_SIZE = 100  # Tamaño del sprite del jugador
 
+<<<<<<< HEAD
 # --- Salud y Defensa ---
 PLAYER_BASE_HEALTH = 100      # Salud inicial del jugador
 PLAYER_BASE_ARMOR = 0         # Armadura inicial (absorbe daño antes que la vida)
 PLAYER_MAX_ARMOR = 100        # Capacidad máxima de armadura
+=======
+# Zombies
+ZOMBIE_COMMON_SPEED = 70
+ZOMBIE_COMMON_SIZE = 100
+ZOMBIE_COMMON_HP = 25
+ZOMBIE_COMMON_DAMAGE = 15
+>>>>>>> main
 
 # --- Arma inicial ---
 PLAYER_BASE_FIRE_RATE = 100   # RPM inicial (disparos por minuto) - BALANCEADO
