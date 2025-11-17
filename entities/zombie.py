@@ -242,26 +242,45 @@ class Zombie(pygame.sprite.Sprite):
             ZombieAI.wander(self, dt)
 
     def take_damage(self, dmg, game=None):
-        if self.dead: return
-        self.hp -= dmg
-        if self.hp > 0: return
+        if self.dead:
+            return
 
+        # Restar vida
+        self.hp -= dmg
+
+        # ALERTAR AL ZOMBIE CUANDO ES ATACADO
+        self.alerted = True
+
+        # Alertar a los zombies cercanos
+        if game:
+            for z in game.zombies:
+                if z != self and not z.dead and z.pos.distance_to(self.pos) <= ZOMBIE_ALERT_RADIUS:
+                    z.alerted = True
+
+        # Si aún tiene vida, solo alertado, no muerto
+        if self.hp > 0:
+            return
+
+        # Zombie muere
         self.dead = True
         self.dead_timer = 0
         self.damage = 0
         self.radius = 0
         self.sound.stop()
 
+        # Drop de upgrades y puntaje
         if game:
             cfg = ZOMBIE_UPGRADE_DROP_SYSTEM.get(self.type)
             if cfg:
                 drop_chance = cfg["base_chance"] + self.drop_bonus
-                if random.random()*100 < drop_chance:
+                if random.random() * 100 < drop_chance:
                     from core.upgrade import Upgrade
                     Upgrade.spawn_from_zombie(game.upgrades, self)
             game.player.score += self.score_value
 
+        # Sprite de cadáver
         self.dead_image = self.sprites.get_dead(self.direction)
+
 
     def _update_death(self, dt):
         self.dead_timer += dt
