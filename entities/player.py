@@ -1,4 +1,4 @@
-import pygame
+import pygame 
 import os
 
 from utils.math_utils import MathUtils
@@ -9,7 +9,8 @@ from entities.weapon import Weapon
 from settings import (
     PLAYER_SPEED, PLAYER_SIZE, PLAYER_BASE_HEALTH, PLAYER_BASE_ARMOR,
     PLAYER_BASE_FIRE_RATE, PLAYER_BASE_MAGAZINE, PLAYER_BASE_RESERVE_AMMO,
-    UPGRADE_VALUES, WORLD_WIDTH, WORLD_HEIGHT, PLAYER_MAX_ARMOR
+    UPGRADE_VALUES, WORLD_WIDTH, WORLD_HEIGHT, PLAYER_MAX_ARMOR,
+    PLAYER_MIN_DISTANCE_TO_ZOMBIE
 )
 
 
@@ -90,7 +91,7 @@ class Player(pygame.sprite.Sprite):
     # ============================================================
     # ⌨ MOVIMIENTO E INPUT
     # ============================================================
-    def handle_input(self, dt, mouse_pos, camera):
+    def handle_input(self, dt, mouse_pos, camera, zombies=None):
         move = pygame.Vector2(0, 0)
         keys = pygame.key.get_pressed()
 
@@ -102,9 +103,28 @@ class Player(pygame.sprite.Sprite):
         if move.length_squared() > 0:
             move = move.normalize()
 
-        # Movimiento usando utils
-        self.pos += move * self.speed * dt
-        self.pos = MovementUtils.clamp_position(self.pos, WORLD_WIDTH, WORLD_HEIGHT)
+        # Movimiento inicial
+        new_pos = self.pos + move * self.speed * dt
+        new_pos = MovementUtils.clamp_position(new_pos, WORLD_WIDTH, WORLD_HEIGHT)
+
+        # Evitar atravesar zombies
+        if zombies:
+            for z in zombies:
+                if z.dead: 
+                    continue
+                min_dist = z.radius + PLAYER_MIN_DISTANCE_TO_ZOMBIE
+                offset = new_pos - z.pos
+                dist = offset.length()
+                if dist < min_dist:
+                    # Alejar al player fuera del radio mínimo
+                    if dist > 0:
+                        offset.scale_to_length(min_dist)
+                        new_pos = z.pos + offset
+                    else:
+                        # Caso raro: mismo punto, mover en dirección aleatoria
+                        new_pos += pygame.Vector2(min_dist, 0)
+
+        self.pos = new_pos
         self.rect.center = self.pos
 
         self._update_direction(mouse_pos, camera)
@@ -131,7 +151,7 @@ class Player(pygame.sprite.Sprite):
     # 🔄 UPDATE
     # ============================================================
     def update(self, dt, game):
-        self.handle_input(dt, pygame.mouse.get_pos(), game.camera)
+        self.handle_input(dt, pygame.mouse.get_pos(), game.camera, zombies=game.zombies)
         self.weapon.update(dt)
 
     # ============================================================
