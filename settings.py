@@ -33,28 +33,23 @@ PLAYER_SIZE = 100  # Tamaño del sprite del jugador
 
 # --- Salud y Defensa ---
 PLAYER_BASE_HEALTH = 100      # Salud inicial del jugador
-PLAYER_BASE_ARMOR = 0         # Armadura inicial (absorbe daño antes que la vida)
+PLAYER_BASE_ARMOR = 0         # Armadura inicial
 PLAYER_MAX_ARMOR = 100        # Capacidad máxima de armadura
-
-# --- Arma inicial ---
-PLAYER_BASE_FIRE_RATE = 100   # RPM inicial (disparos por minuto) - BALANCEADO
-PLAYER_BASE_MAGAZINE = 30     # Capacidad inicial del cargador - GENEROSO
-PLAYER_BASE_RESERVE_AMMO = 120  # Munición de reserva inicial - SUFICIENTE
 
 # ===================================================
 # ARMAS Y BALAS
 # ===================================================
 
 # --- Estadísticas base del arma ---
-WEAPON_BASE_DAMAGE = 20           # Daño por bala (balanceado para matar zombies comunes en 2-3 balas)
-WEAPON_BASE_RPM = 600             # Disparos por minuto base
+WEAPON_BASE_DAMAGE = 20           # Daño por bala
+WEAPON_BASE_RPM = 600             # Disparos por minuto
 WEAPON_BASE_MAGAZINE = 30         # Capacidad del cargador
 WEAPON_BASE_RESERVE_AMMO = 120    # Munición de reserva
 WEAPON_BASE_RELOAD_TIME = 1.5     # Tiempo de recarga en segundos
 SPRITE_ANGLE_OFFSET = 45.0        # Offset para rotar sprites de armas y balas
 
 # --- Proyectiles ---
-WEAPON_BULLET_SPEED = 1200        # Velocidad de las balas en píxeles/segundo (rápido pero visible)
+WEAPON_BULLET_SPEED = 1200        # Velocidad de las balas en píxeles/segundo
 BULLET_BASE_LIFETIME = 2.0        # Tiempo de vida de cada bala en segundos
 
 # ===================================================

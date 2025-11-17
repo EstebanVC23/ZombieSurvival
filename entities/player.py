@@ -1,14 +1,12 @@
 import pygame 
 import os
 
-from utils.math_utils import MathUtils
 from utils.movement_utils import MovementUtils
 from utils.helpers import load_image_safe, clean_image_background
 from entities.weapon import Weapon
 
 from settings import (
     PLAYER_SPEED, PLAYER_SIZE, PLAYER_BASE_HEALTH, PLAYER_BASE_ARMOR,
-    PLAYER_BASE_FIRE_RATE, PLAYER_BASE_MAGAZINE, PLAYER_BASE_RESERVE_AMMO,
     UPGRADE_VALUES, WORLD_WIDTH, WORLD_HEIGHT, PLAYER_MAX_ARMOR,
     PLAYER_MIN_DISTANCE_TO_ZOMBIE
 )
@@ -52,15 +50,8 @@ class Player(pygame.sprite.Sprite):
         # ------------------------------
         # ARMA
         # ------------------------------
-        self.weapon = Weapon(
-            self,
-            damage=None,
-            rpm=PLAYER_BASE_FIRE_RATE,
-            ammo=PLAYER_BASE_MAGAZINE,
-            reserve=PLAYER_BASE_RESERVE_AMMO,
-            level=1,
-            reload_time=None
-        )
+        # Ahora Weapon usa sus propios valores por defecto (WEAPON_BASE_...)
+        self.weapon = Weapon(owner=self)
 
     # ============================================================
     # 🔹 Utils
@@ -121,7 +112,6 @@ class Player(pygame.sprite.Sprite):
                         offset.scale_to_length(min_dist)
                         new_pos = z.pos + offset
                     else:
-                        # Caso raro: mismo punto, mover en dirección aleatoria
                         new_pos += pygame.Vector2(min_dist, 0)
 
         self.pos = new_pos
