@@ -9,7 +9,7 @@ from settings import (
     ZOMBIE_TANK_HP, ZOMBIE_TANK_SPEED, ZOMBIE_TANK_SIZE, ZOMBIE_TANK_DAMAGE,
     ZOMBIE_BOSS_HP, ZOMBIE_BOSS_SPEED, ZOMBIE_BOSS_SIZE, ZOMBIE_BOSS_DAMAGE,
     ZOMBIE_RARITY_MULT, ZOMBIE_RARITY_UPGRADE_COUNT,
-    ZOMBIE_RARITY_SCORE_MULT, ZOMBIE_RARITY_DROP_BONUS,
+    ZOMBIE_RARITY_SCORE_MULT, ZOMBIE_MIN_DISTANCE_TO_PLAYER,
     ZOMBIE_SCORE_VALUES, ZOMBIE_UPGRADE_DROP_SYSTEM,
     ZOMBIE_ATTACK_COOLDOWN, ZOMBIE_DETECTION_RADIUS, ZOMBIE_ALERT_RADIUS,
     ZOMBIE_WANDER_CHANGE_DIR_CHANCE, ZOMBIE_WANDER_SPEED_MULT,
@@ -109,7 +109,13 @@ class ZombieAI:
     @staticmethod
     def move_towards(zombie, target_pos, dt, all_zombies=None):
         move_vec = target_pos - zombie.pos
-        if move_vec.length_squared() == 0: return
+        dist_to_player = move_vec.length()
+
+        # Evitar que zombie se meta dentro del player
+        min_dist = zombie.radius + ZOMBIE_MIN_DISTANCE_TO_PLAYER
+        if dist_to_player <= min_dist:
+            return  # No moverse más cerca, sigue atacando
+
         move_dir = move_vec.normalize()
 
         # Repulsión entre zombies
@@ -122,9 +128,11 @@ class ZombieAI:
                     move_dir += offset.normalize() * (ZOMBIE_REPULSION_FORCE / dist)
             move_dir = move_dir.normalize()
 
+        # Mover zombie
         zombie.pos += move_dir * zombie.speed * dt
         zombie.rect.center = (round(zombie.pos.x), round(zombie.pos.y))
         zombie.direction = ZombieAI.choose_direction_from_vector(move_vec)
+
 
     @staticmethod
     def wander(zombie, dt):

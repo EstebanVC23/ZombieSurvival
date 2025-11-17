@@ -50,7 +50,8 @@ WEAPON_BASE_DAMAGE = 20           # Daño por bala (balanceado para matar zombie
 WEAPON_BASE_RPM = 600             # Disparos por minuto base
 WEAPON_BASE_MAGAZINE = 30         # Capacidad del cargador
 WEAPON_BASE_RESERVE_AMMO = 120    # Munición de reserva
-WEAPON_BASE_RELOAD_TIME = 1.5     # Tiempo de recarga en segundos (realista)
+WEAPON_BASE_RELOAD_TIME = 1.5     # Tiempo de recarga en segundos
+SPRITE_ANGLE_OFFSET = 45.0        # Offset para rotar sprites de armas y balas
 
 # --- Proyectiles ---
 WEAPON_BULLET_SPEED = 1200        # Velocidad de las balas en píxeles/segundo (rápido pero visible)
@@ -124,6 +125,11 @@ ZOMBIE_WANDER_SPEED_MULT = 0.8         # multiplicador de velocidad al vagar
 ZOMBIE_REPULSION_RADIUS = 30
 ZOMBIE_REPULSION_FORCE = 20
 
+# Distancia mínima que un zombie debe mantener respecto al jugador
+ZOMBIE_MIN_DISTANCE_TO_PLAYER = 30  # píxeles adicionales al radio del zombie
+
+# Distancia mínima que el player debe mantener con los zombies (para no atravesarlos)
+PLAYER_MIN_DISTANCE_TO_ZOMBIE = 5  # píxeles adicionales al radio del zombie
 
 # ===================================================
 # SISTEMA DE RAREZAS DE ZOMBIES
