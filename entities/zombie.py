@@ -1,43 +1,43 @@
 import pygame
 import os
 import random
+
+from utils.math_utils import MathUtils
+from utils.movement_utils import MovementUtils
+from utils.sound_utils import SoundUtils
+from utils.helpers import load_image_safe, clean_image_background, load_sound
+
 from settings import (
+    WORLD_WIDTH, WORLD_HEIGHT,
     ZOMBIE_COMMON_HP, ZOMBIE_COMMON_SPEED, ZOMBIE_COMMON_SIZE, ZOMBIE_COMMON_DAMAGE,
     ZOMBIE_FAST_HP, ZOMBIE_FAST_SPEED, ZOMBIE_FAST_SIZE, ZOMBIE_FAST_DAMAGE,
     ZOMBIE_TANK_HP, ZOMBIE_TANK_SPEED, ZOMBIE_TANK_SIZE, ZOMBIE_TANK_DAMAGE,
     ZOMBIE_BOSS_HP, ZOMBIE_BOSS_SPEED, ZOMBIE_BOSS_SIZE, ZOMBIE_BOSS_DAMAGE,
     ZOMBIE_RARITY_CHANCE, ZOMBIE_RARITY_MULT, ZOMBIE_RARITY_UPGRADE_COUNT,
     ZOMBIE_RARITY_SCORE_MULT, ZOMBIE_RARITY_DROP_BONUS,
-    ZOMBIE_SCORE_VALUES,
-    WORLD_WIDTH, WORLD_HEIGHT
+    ZOMBIE_SCORE_VALUES
 )
-from utils.helpers import load_image_safe, clean_image_background, load_sound
 
 
-class Zombie(pygame.sprite.Sprite):
-    # ===============================
-    # ESTADÍSTICAS BASE POR TIPO
-    # ===============================
+# ================================================================
+#   SISTEMA DE STATS
+# ================================================================
+class ZombieStats:
+
     TYPE_STATS = {
         "common": {"hp": ZOMBIE_COMMON_HP, "speed": ZOMBIE_COMMON_SPEED, "radius": ZOMBIE_COMMON_SIZE//2, "damage": ZOMBIE_COMMON_DAMAGE},
-        "fast":   {"hp": ZOMBIE_FAST_HP, "speed": ZOMBIE_FAST_SPEED, "radius": ZOMBIE_FAST_SIZE//2, "damage": ZOMBIE_FAST_DAMAGE},
-        "tank":   {"hp": ZOMBIE_TANK_HP, "speed": ZOMBIE_TANK_SPEED, "radius": ZOMBIE_TANK_SIZE//2, "damage": ZOMBIE_TANK_DAMAGE},
-        "boss":   {"hp": ZOMBIE_BOSS_HP, "speed": ZOMBIE_BOSS_SPEED, "radius": ZOMBIE_BOSS_SIZE//2, "damage": ZOMBIE_BOSS_DAMAGE},
+        "fast":   {"hp": ZOMBIE_FAST_HP,   "speed": ZOMBIE_FAST_SPEED,   "radius": ZOMBIE_FAST_SIZE//2,   "damage": ZOMBIE_FAST_DAMAGE},
+        "tank":   {"hp": ZOMBIE_TANK_HP,   "speed": ZOMBIE_TANK_SPEED,   "radius": ZOMBIE_TANK_SIZE//2,   "damage": ZOMBIE_TANK_DAMAGE},
+        "boss":   {"hp": ZOMBIE_BOSS_HP,   "speed": ZOMBIE_BOSS_SPEED,   "radius": ZOMBIE_BOSS_SIZE//2,   "damage": ZOMBIE_BOSS_DAMAGE},
     }
 
-    # ===============================
-    # AUMENTO DE STATS POR NIVEL (depende del tipo)
-    # ===============================
     LEVEL_UP_STATS = {
-        "common": {"hp": 3, "damage": 2, "speed": 1.5},
-        "fast":   {"hp": 2, "damage": 1, "speed": 4},
-        "tank":   {"hp": 8, "damage": 4, "speed": 0.8},
-        "boss":   {"hp": 20, "damage": 10, "speed": 1.0},
+        "common": {"hp": 3,  "damage": 2,  "speed": 1.5},
+        "fast":   {"hp": 2,  "damage": 1,  "speed": 4},
+        "tank":   {"hp": 8,  "damage": 4,  "speed": 0.8},
+        "boss":   {"hp": 20, "damage": 10, "speed": 1},
     }
 
-    # ===============================
-    # SISTEMA DE RAREZAS
-    # ===============================
     RARITY_TABLE = [
         ("common",    ZOMBIE_RARITY_CHANCE["common"]),
         ("uncommon",  ZOMBIE_RARITY_CHANCE["uncommon"]),
@@ -46,195 +46,256 @@ class Zombie(pygame.sprite.Sprite):
         ("legendary", ZOMBIE_RARITY_CHANCE["legendary"]),
     ]
 
-    def __init__(self, pos, ztype="common", level=1, rarity=None):
-        super().__init__()
-        stats = self.TYPE_STATS.get(ztype, self.TYPE_STATS["common"])
-        self.type = ztype
-        self.level = level
-        self.pos = pygame.Vector2(pos)
-        self.direction = "front"
-        self.dead = False
-        self.dead_timer = 0.0
-        self.fade = 0.0
-        self.dead_image = None
+    @staticmethod
+    def roll_rarity():
+        r = random.random() * 100
+        acc = 0
+        for rarity, chance in ZombieStats.RARITY_TABLE:
+            acc += chance
+            if r <= acc:
+                return rarity
+        return "common"
 
-        # ===============================
-        # APLICAR RAREZA
-        # ===============================
-        self.rarity = rarity if rarity else self.roll_rarity()
-        rarity_mult = ZOMBIE_RARITY_MULT[self.rarity]
-        possible_stats = ["hp", "speed", "damage"]
-        num_stats_to_upgrade = ZOMBIE_RARITY_UPGRADE_COUNT[self.rarity]
-        stats_to_upgrade = random.sample(possible_stats, num_stats_to_upgrade)
+    @staticmethod
+    def build(type_name, level, rarity):
 
-        # Stats base
-        self.hp = stats["hp"]
-        self.speed = stats["speed"]
-        self.damage = stats["damage"]
-        self.radius = stats["radius"]  # Tamaño fijo
+        base = ZombieStats.TYPE_STATS[type_name]
+        hp = base["hp"]
+        speed = base["speed"]
+        dmg = base["damage"]
+        radius = base["radius"]
 
-        # Aplicar multiplicador de rareza a stats seleccionados
-        for s in stats_to_upgrade:
-            setattr(self, s, getattr(self, s) * rarity_mult)
+        # ----------------------------- RAREZA
+        rarity_mult = ZOMBIE_RARITY_MULT[rarity]
+        possible = ["hp", "speed", "damage"]
+        n_upgrades = ZOMBIE_RARITY_UPGRADE_COUNT[rarity]
+        chosen = random.sample(possible, n_upgrades)
 
-        # ===============================
-        # APLICAR INCREMENTO POR NIVEL SEGÚN TIPO
-        # ===============================
-        if self.level > 1:
-            level_increase = self.LEVEL_UP_STATS[self.type]
-            self.hp += level_increase["hp"] * (self.level - 1)
-            self.damage += level_increase["damage"] * (self.level - 1)
-            self.speed += level_increase["speed"] * (self.level - 1)
+        # Aplicar mejoras
+        if "hp" in chosen: hp *= rarity_mult
+        if "speed" in chosen: speed *= rarity_mult
+        if "damage" in chosen: dmg *= rarity_mult
 
-        # ===============================
-        # Puntaje y drop
-        # ===============================
-        self.score_value = int(ZOMBIE_SCORE_VALUES[self.type] * ZOMBIE_RARITY_SCORE_MULT[self.rarity])
-        self.drop_bonus = ZOMBIE_RARITY_DROP_BONUS[self.rarity]
+        # ----------------------------- NIVEL
+        if level > 1:
+            lv = ZombieStats.LEVEL_UP_STATS[type_name]
+            hp += lv["hp"] * (level - 1)
+            dmg += lv["damage"] * (level - 1)
+            speed += lv["speed"] * (level - 1)
 
-        # ===============================
-        # SPRITES
-        # ===============================
-        self.image = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, (150,180,40), (self.radius,self.radius), self.radius)
-        self.rect = self.image.get_rect(center=(round(self.pos.x), round(self.pos.y)))
+        return {
+            "hp": hp,
+            "speed": speed,
+            "damage": dmg,
+            "radius": radius
+        }
 
-        base = os.path.join("zombie", "common")
+
+# ================================================================
+#   SISTEMA DE SPRITES
+# ================================================================
+class ZombieSprites:
+    def __init__(self, type_name, radius):
+        self.radius = radius
+        base = os.path.join("zombie", "common")  # TODO: soportar sprites por tipo
+
         f = load_image_safe(os.path.join(base, "common_frente.png"))
         b = load_image_safe(os.path.join(base, "common_espalda.png"))
         s = load_image_safe(os.path.join(base, "common_lateral.png"))
 
         self.frames = {}
         if f and b and s:
-            self.frames["front"] = clean_image_background(pygame.transform.scale(f, (self.radius*2,self.radius*2)))
-            self.frames["back"] = clean_image_background(pygame.transform.scale(b, (self.radius*2,self.radius*2)))
-            self.frames["left"] = clean_image_background(pygame.transform.scale(s, (self.radius*2,self.radius*2)))
+            self.frames["front"] = clean_image_background(pygame.transform.scale(f, (radius*2, radius*2)))
+            self.frames["back"] = clean_image_background(pygame.transform.scale(b, (radius*2, radius*2)))
+            self.frames["left"] = clean_image_background(pygame.transform.scale(s, (radius*2, radius*2)))
             self.frames["right"] = pygame.transform.flip(self.frames["left"], True, False)
-            self.image = self.frames["front"]
 
         raw_dead = load_image_safe(os.path.join(base, "dead.png"))
-        self.dead_sprite = clean_image_background(pygame.transform.scale(raw_dead, (self.radius*2, self.radius*2))) if raw_dead else None
+        self.dead_sprite = (
+            clean_image_background(pygame.transform.scale(raw_dead, (radius*2, radius*2)))
+            if raw_dead else None
+        )
 
-        # Sonido
+    def get_frame(self, direction):
+        return self.frames.get(direction)
+
+    def get_dead(self, direction):
+        img = self.dead_sprite
+        if not img:
+            return None
+        if direction == "back": return pygame.transform.rotate(img, 180)
+        if direction == "left": return pygame.transform.rotate(img, -90)
+        if direction == "right": return pygame.transform.rotate(img, 90)
+        return img
+
+
+# ================================================================
+#   SISTEMA DE SONIDO
+# ================================================================
+class ZombieSound:
+    def __init__(self):
         self.sound = load_sound("zombie_common.mp3", volume=0.0)
-        if self.sound: self.sound.play(loops=-1)
-        self.max_sound_distance = max(600, (WORLD_WIDTH+WORLD_HEIGHT)/10)
+        if self.sound:
+            try:
+                self.sound.play(loops=-1)
+            except: pass
 
-    # =======================================================
-    # ROLL RAREZA
-    # =======================================================
-    def roll_rarity(self):
-        r = random.random()*100
-        cumulative = 0
-        for rarity, chance in self.RARITY_TABLE:
-            cumulative += chance
-            if r <= cumulative:
-                return rarity
-        return "common"
+        self.max_dist = max(600, (WORLD_WIDTH + WORLD_HEIGHT) / 10)
 
-    # =======================================================
-    # PROPIEDADES
-    # =======================================================
-    @property
-    def x(self): return self.pos.x
-    @property
-    def y(self): return self.pos.y
+    def update_volume(self, zombie_pos, player_pos):
+        if not self.sound:
+            return
+        dist = zombie_pos.distance_to(player_pos)
+        SoundUtils.apply_distance_volume(self.sound, dist, self.max_dist)
 
-    # =======================================================
-    # UPDATE
-    # =======================================================
+    def stop(self):
+        if not self.sound:
+            return
+        try:
+            self.sound.stop()
+        except:
+            pass
+
+
+# ================================================================
+#   ZOMBIE (CLASE PRINCIPAL)
+# ================================================================
+class Zombie(pygame.sprite.Sprite):
+
+    def __init__(self, pos, ztype="common", level=1, rarity=None):
+        super().__init__()
+
+        # ----------------------------- Posición
+        self.pos = pygame.Vector2(pos)
+        self.direction = "front"
+        self.dead = False
+        self.dead_timer = 0
+        self.fade = 0
+
+        # ----------------------------- RAREZA
+        self.type = ztype
+        self.level = level
+        self.rarity = rarity if rarity else ZombieStats.roll_rarity()
+
+        # ----------------------------- STATS
+        stats = ZombieStats.build(ztype, level, self.rarity)
+        self.hp = stats["hp"]
+        self.speed = stats["speed"]
+        self.damage = stats["damage"]
+        self.radius = stats["radius"]
+
+        # ----------------------------- SCORE & BONUS
+        self.score_value = int(ZOMBIE_SCORE_VALUES[ztype] * ZOMBIE_RARITY_SCORE_MULT[self.rarity])
+        self.drop_bonus = ZOMBIE_RARITY_DROP_BONUS[self.rarity]
+
+        # ----------------------------- SPRITES
+        self.sprites = ZombieSprites(ztype, self.radius)
+        img = self.sprites.get_frame("front")
+        if img:
+            self.image = img
+        else:
+            self.image = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(self.image, (140,180,60), (self.radius, self.radius), self.radius)
+
+        self.rect = self.image.get_rect(center=self.pos)
+
+        # ----------------------------- SONIDO
+        self.sound = ZombieSound()
+
+        # ----------------------------- DEAD IMAGE
+        self.dead_image = None
+
+    # -----------------------------------------------------------------
+    # Update principal
+    # -----------------------------------------------------------------
     def update(self, dt, game):
         if self.dead:
-            self.dead_timer += dt
-            self._show_death_sprite(dt)
-            if self.sound: self.sound.set_volume(0.0)
-            if self.dead_timer >= 4.0: self.kill()
+            self._update_death(dt)
             return
 
-        if not game.player: return
         if getattr(game, "paused", False):
-            if self.sound: self.sound.stop()
+            self.sound.stop()
             return
 
-        # Movimiento
-        dir_vec = game.player.pos - self.pos
-        if dir_vec.length_squared() > 0:
-            d = dir_vec.normalize()
-            self.pos += d * self.speed * dt
-            self.rect.center = (round(self.pos.x), round(self.pos.y))
-            self._set_dir(d)
+        if not game.player:
+            return
 
-        if self.frames:
-            self.image = self.frames.get(self.direction, self.image)
+        # --------- Movimiento
+        self._update_movement(dt, game.player)
 
-        # Colisión jugador
+        # --------- Cambio de sprite según dirección
+        frame = self.sprites.get_frame(self.direction)
+        if frame:
+            self.image = frame
+
+        # --------- Colisión con el jugador
         if pygame.sprite.collide_circle(self, game.player):
             game.player.take_damage(self.damage * dt)
 
-        # Sonido
-        if self.sound:
-            dist = self.pos.distance_to(game.player.pos)
-            vol = max(0.0, min(1.0, (1-(dist/self.max_sound_distance))**2)) if dist<self.max_sound_distance else 0.0
-            self.sound.set_volume(vol)
+        # --------- Sonido
+        self.sound.update_volume(self.pos, game.player.pos)
 
-    # =======================================================
-    # RECIBIR DAÑO (MÉTODO COMPLETO CORREGIDO)
-    # =======================================================
+    # -----------------------------------------------------------------
+    # Movimiento
+    # -----------------------------------------------------------------
+    def _update_movement(self, dt, player):
+        dvec = player.pos - self.pos
+        if dvec.length_squared() == 0:
+            return
+
+        dnorm = MathUtils.normalize(dvec)
+        self.pos += dnorm * self.speed * dt
+        self.rect.center = (round(self.pos.x), round(self.pos.y))
+        self.direction = MovementUtils.choose_direction_from_vector(dnorm)
+
+    # -----------------------------------------------------------------
+    # Muerte
+    # -----------------------------------------------------------------
     def take_damage(self, dmg, game=None):
-        if self.dead: return
+        if self.dead:
+            return
 
         self.hp -= dmg
-        if self.hp > 0: return
+        if self.hp > 0:
+            return
 
+        # ----------- Muerte activada
         self.dead = True
-        self.dead_timer = 0.0
-        if self.sound:
-            try: self.sound.stop()
-            except Exception: pass
+        self.dead_timer = 0
+        self.sound.stop()
+        self.damage = 0
+        self.radius = 0
 
-        # ✅ DROP Y SCORE CON SISTEMA UNIFICADO
+        # ----------- Drop & Score
         if game:
             from settings import ZOMBIE_UPGRADE_DROP_SYSTEM
             from core.upgrade import Upgrade
-            
-            drop_config = ZOMBIE_UPGRADE_DROP_SYSTEM.get(self.type)
-            
-            if drop_config:
-                # Aplicar bonus de rareza a la probabilidad base
-                drop_chance = drop_config["base_chance"] + self.drop_bonus
-                
-                # Check si dropea algo
+
+            cfg = ZOMBIE_UPGRADE_DROP_SYSTEM.get(self.type)
+            if cfg:
+                drop_chance = cfg["base_chance"] + self.drop_bonus
                 if random.random() * 100 < drop_chance:
                     Upgrade.spawn_from_zombie(game.upgrades, self)
-            
+
             game.player.score += self.score_value
 
-        # Mostrar sprite muerto
-        if self.dead_sprite:
-            rotated = self.dead_sprite
-            if self.direction=="back": rotated = pygame.transform.rotate(self.dead_sprite, 180)
-            elif self.direction=="left": rotated = pygame.transform.rotate(self.dead_sprite, -90)
-            elif self.direction=="right": rotated = pygame.transform.rotate(self.dead_sprite, 90)
-        else:
-            rotated = self.image.copy()
+        # --------- Sprite muerto
+        self.dead_image = self.sprites.get_dead(self.direction)
 
-        self.dead_image = rotated
-        self.damage = 0
-        self.radius = 0 # Evitar más colisiones
+    # -----------------------------------------------------------------
+    # Animación de muerte (Fade + linger)
+    # -----------------------------------------------------------------
+    def _update_death(self, dt):
+        self.dead_timer += dt
+        if not self.dead_image:
+            return
 
-    # =======================================================
-    # AUXILIARES
-    # =======================================================
-    def _set_dir(self, v):
-        dx, dy = v.x, v.y
-        if abs(dx)>abs(dy): self.direction = "right" if dx>0 else "left"
-        else: self.direction = "front" if dy>0 else "back"
-
-    def _show_death_sprite(self, dt):
-        if not self.dead_image: return
-        if self.fade<255: self.fade += 400*dt
-        if self.fade>255: self.fade=255
+        self.fade = min(255, self.fade + 400 * dt)
         corpse = self.dead_image.copy()
         corpse.set_alpha(int(self.fade))
+
         self.image = corpse
-        self.rect = self.image.get_rect(center=(round(self.pos.x), round(self.pos.y)))
+        self.rect = corpse.get_rect(center=self.pos)
+
+        if self.dead_timer >= 4.0:
+            self.kill()

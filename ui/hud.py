@@ -1,6 +1,7 @@
 import pygame
 import math
 from ui.map import MiniMap
+from entities.zombie import ZombieStats
 
 class HUD:
     """HUD principal con barra de vida, shield, ammo y minimapa."""
@@ -91,8 +92,8 @@ class HUD:
                 continue
 
             # Barra de vida
-            zx, zy = z_screen_rect.centerx, z_screen_rect.bottom+4
-            max_z_hp = z.TYPE_STATS.get(z.type,{}).get("hp", getattr(z,"hp",1))
+            zx, zy = z_screen_rect.centerx, z_screen_rect.bottom + 4
+            max_z_hp = ZombieStats.TYPE_STATS.get(z.type, {}).get("hp", getattr(z, "hp", 1))
             hp_ratio = max(0.0, min(1.0, (z.hp/max_z_hp) if max_z_hp else 0.0))
             bar_w = max(24, z_screen_rect.width//2)
             bar_h = 6
