@@ -99,6 +99,33 @@ ZOMBIE_LEVEL_MIN_VARIATION = -1   # Puede ser 1 nivel menor
 ZOMBIE_LEVEL_MAX_VARIATION = 2    # Puede ser hasta 2 niveles mayor
 
 # ===================================================
+# SISTEMA DE DETECCIÓN Y MOVIMIENTO
+# ===================================================
+
+# Radio de acción del zombie (para detectar al jugador)
+ZOMBIE_DETECTION_RADIUS = 700  # píxeles
+
+# Cooldown entre ataques (tiempo que tarda en infligir daño)
+ZOMBIE_ATTACK_COOLDOWN = {
+    "common": 1.0,
+    "fast":   0.8,
+    "tank":   1.5,
+    "boss":   2.0
+}
+
+# Radio para alertar a otros zombies cercanos
+ZOMBIE_ALERT_RADIUS = 300  # píxeles
+
+# Vagabundeo aleatorio
+ZOMBIE_WANDER_CHANGE_DIR_CHANCE = 0.01  # probabilidad de cambiar dirección por frame
+ZOMBIE_WANDER_SPEED_MULT = 0.8         # multiplicador de velocidad al vagar
+
+# Repulsión entre zombies (para no amontonarse)
+ZOMBIE_REPULSION_RADIUS = 30
+ZOMBIE_REPULSION_FORCE = 20
+
+
+# ===================================================
 # SISTEMA DE RAREZAS DE ZOMBIES
 # ===================================================
 
@@ -149,6 +176,23 @@ ZOMBIE_RARITY_DROP_BONUS = {
     "epic": 25,         # +25% chance
     "legendary": 50     # +50% chance (casi garantizado)
 }
+
+ZOMBIE_LEVEL_UP_STATS = {
+    "common": {"hp": 3,  "damage": 2,  "speed": 1.5},
+    "fast":   {"hp": 2,  "damage": 1,  "speed": 4},
+    "tank":   {"hp": 8,  "damage": 4, "speed": 0.8},
+    "boss":   {"hp": 20, "damage": 10, "speed": 1},
+}
+
+# ===================================================
+# cooldown de ataque de zombies
+# ===================================================
+ZOMBIE_ATTACK_COOLDOWN = {
+    "common": 1.0,
+    "fast":   0.8,
+    "tank":   1.5,
+    "boss":   2.0
+}# segundos entre ataques
 
 # ===================================================
 # SISTEMA UNIFICADO DE DROPS DE MEJORAS
