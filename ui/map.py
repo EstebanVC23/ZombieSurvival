@@ -1,16 +1,121 @@
 # ui/map.py
 import pygame
+import math
 from settings import WORLD_WIDTH, WORLD_HEIGHT
 
+# ========================= Datos del Minimap =========================
+class MiniMapData:
+    """Gestiona posiciones de jugador, zombies y upgrades."""
 
+    def __init__(self, game):
+        self.game = game
+        self._player_pos = (0, 0)
+        self._zombie_positions = []
+        self._upgrade_positions = []
+
+    def world_to_map(self, wx: float, wy: float, width: int, height: int, margin: int):
+        mx = int(wx * (width / max(1, WORLD_WIDTH))) + margin
+        my = int(wy * (height / max(1, WORLD_HEIGHT))) + margin
+        mx = max(margin, min(margin + width, mx))
+        my = max(margin, min(margin + height, my))
+        return mx, my
+
+    def recompute_positions(self, width: int, height: int, margin: int):
+        game = self.game
+        player = getattr(game, "player", None)
+        if player and hasattr(player, "pos"):
+            self._player_pos = self.world_to_map(player.pos.x, player.pos.y, width, height, margin)
+        else:
+            self._player_pos = (margin + width // 2, margin + height // 2)
+
+        # Zombies
+        zs = []
+        try:
+            for z in getattr(game, "zombies", []):
+                if getattr(z, "dead", False): 
+                    continue
+                if hasattr(z, "pos"):
+                    zs.append(self.world_to_map(z.pos.x, z.pos.y, width, height, margin))
+        except Exception:
+            zs = []
+        self._zombie_positions = zs
+
+        # Upgrades
+        ups = []
+        try:
+            for u in getattr(game, "upgrades", []):
+                if hasattr(u, "pos"):
+                    ups.append(self.world_to_map(u.pos.x, u.pos.y, width, height, margin))
+        except Exception:
+            ups = []
+        self._upgrade_positions = ups
+
+# ========================= Renderizado del Minimap =========================
+class MiniMapRenderer:
+    """Se encarga de dibujar el minimapa y todos sus elementos."""
+
+    def __init__(self, width: int, height: int, margin: int, bg_color, border_color):
+        self.width = width
+        self.height = height
+        self.margin = margin
+        self.bg_color = bg_color
+        self.border_color = border_color
+        self.surface = pygame.Surface((self.width + 2 * self.margin, self.height + 2 * self.margin), pygame.SRCALPHA)
+        self.pulse_timer = 0
+        self.screen_rect = pygame.Rect(0, 0, self.width + 2 * self.margin, self.height + 2 * self.margin)
+
+    def draw(self, surface, data: MiniMapData, position: str = "topright"):
+        data.recompute_positions(self.width, self.height, self.margin)
+        self.pulse_timer += 0.1
+        pulse = abs(math.sin(self.pulse_timer)) * 0.3 + 0.7
+
+        sw, sh = surface.get_size()
+        map_x = sw - (self.width + 2 * self.margin) - 12 if position == "topright" else 12
+        map_y = 12
+
+        self.surface.fill((0, 0, 0, 0))
+
+        # Sombra
+        shadow = pygame.Surface((self.width + 2 * self.margin, self.height + 2 * self.margin), pygame.SRCALPHA)
+        shadow.fill((0, 0, 0, 80))
+        surface.blit(shadow, (map_x + 3, map_y + 3))
+
+        # Fondo
+        bg_surf = pygame.Surface((self.width + 2 * self.margin, self.height + 2 * self.margin), pygame.SRCALPHA)
+        bg_surf.fill(self.bg_color)
+        self.surface.blit(bg_surf, (0, 0))
+
+        # Bordes
+        pygame.draw.rect(self.surface, (70, 80, 100), (0, 0, self.width + 2 * self.margin, self.height + 2 * self.margin), width=2, border_radius=8)
+        pygame.draw.rect(self.surface, (40, 45, 55), (self.margin, self.margin, self.width, self.height), width=1, border_radius=4)
+
+        # Upgrades
+        for ux, uy in data._upgrade_positions:
+            pygame.draw.circle(self.surface, (30, 100, 200, 120), (ux, uy), 5)
+            pygame.draw.circle(self.surface, (80, 160, 255), (ux, uy), 3)
+            pygame.draw.circle(self.surface, (150, 200, 255), (ux, uy), 1)
+
+        # Zombies
+        for zx, zy in data._zombie_positions:
+            pygame.draw.circle(self.surface, (200, 40, 40, 150), (zx, zy), 4)
+            pygame.draw.circle(self.surface, (255, 80, 80), (zx, zy), 2)
+
+        # Jugador
+        px, py = data._player_pos
+        pulse_radius = int(7 + pulse * 2)
+        pygame.draw.circle(self.surface, (60, 200, 60, int(80 * pulse)), (px, py), pulse_radius)
+        pygame.draw.circle(self.surface, (70, 220, 70), (px, py), 5)
+        pygame.draw.circle(self.surface, (120, 255, 120), (px, py), 3)
+        pygame.draw.line(self.surface, (200, 255, 200), (px - 4, py), (px + 4, py), 2)
+        pygame.draw.line(self.surface, (200, 255, 200), (px, py - 4), (px, py + 4), 2)
+
+        # Blit final
+        surface.blit(self.surface, (map_x, map_y))
+        self.screen_rect = pygame.Rect(map_x, map_y, self.width + 2 * self.margin, self.height + 2 * self.margin)
+
+# ========================= Minimap Principal =========================
 class MiniMap:
-    """
-    Minimap estático (no sigue cámara). Recibe referencia a game para leer:
-      - game.player (debe tener .pos: Vector2)
-      - game.zombies (iterable de zombies con .pos: Vector2 y .dead flag)
-      - game.upgrades (iterable de upgrades con .pos: Vector2)
-    Actualiza los arrays de posiciones cada `update_interval_ms` para ahorrar CPU.
-    """
+    """Coordinador de datos y renderizado del minimapa."""
 
     def __init__(
         self,
@@ -18,153 +123,24 @@ class MiniMap:
         width: int = 180,
         height: int = 180,
         margin: int = 12,
-        position: str = "topright",  # 'topleft', 'topright'
-        bg_color=(18, 18, 18, 200),
-        border_color=(100, 100, 100),
-        update_interval_ms: int = 100,
+        position: str = "topright",
+        bg_color=(15, 15, 20, 230),
+        border_color=(80, 90, 110),
+        update_interval_ms: int = 100
     ):
-        self.game = game
-        self.width = width
-        self.height = height
-        self.margin = margin
         self.position = position
-        self.bg_color = bg_color
-        self.border_color = border_color
-
-        # escala mundo -> minimapa
-        self.scale_x = self.width / float(max(1, WORLD_WIDTH))
-        self.scale_y = self.height / float(max(1, WORLD_HEIGHT))
-
-        # cache de posiciones (listas de tuplas (x,y) en coordenadas del minimapa)
-        self._player_pos = (0, 0)
-        self._zombie_positions = []  # lista de (x,y)
-        self._upgrade_positions = []
-
-        # temporizador para actualizar caches (ms)
-        self.update_interval_ms = int(update_interval_ms)
+        self.update_interval_ms = update_interval_ms
         self._last_update_ms = 0
 
-        # superficie del minimapa (con alpha)
-        self.surface = pygame.Surface((self.width + 2 * self.margin, self.height + 2 * self.margin), pygame.SRCALPHA)
-
-    def world_to_map(self, wx: float, wy: float):
-        """Convierte coordenadas del mundo (wx,wy) a coordenadas en la superficie del minimapa."""
-        mx = int(wx * self.scale_x) + self.margin
-        my = int(wy * self.scale_y) + self.margin
-        # clamp por si algo sale del rango
-        mx = max(self.margin, min(self.margin + self.width, mx))
-        my = max(self.margin, min(self.margin + self.height, my))
-        return mx, my
-
-    def _recompute_positions(self):
-        """Recalcula y cachea posiciones de player, zombies y upgrades."""
-        game = self.game
-
-        # player
-        player = getattr(game, "player", None)
-        if player is not None and hasattr(player, "pos"):
-            self._player_pos = self.world_to_map(player.pos.x, player.pos.y)
-        else:
-            self._player_pos = (self.margin + self.width // 2, self.margin + self.height // 2)
-
-        # zombies
-        zs = []
-        try:
-            for z in getattr(game, "zombies", []):
-                # ignorar si no tiene pos
-                if getattr(z, "dead", False):
-                    continue
-                if hasattr(z, "pos"):
-                    zs.append(self.world_to_map(z.pos.x, z.pos.y))
-        except Exception:
-            zs = []
-        self._zombie_positions = zs
-
-        # upgrades (no recogidos)
-        ups = []
-        try:
-            for u in getattr(game, "upgrades", []):
-                # asumo que las upgrades en group son las no recogidas
-                if hasattr(u, "pos"):
-                    ups.append(self.world_to_map(u.pos.x, u.pos.y))
-        except Exception:
-            ups = []
-        self._upgrade_positions = ups
+        self.data = MiniMapData(game)
+        self.renderer = MiniMapRenderer(width, height, margin, bg_color, border_color)
 
     def update_if_needed(self):
-        """Llama a recompute solo si pasó el intervalo."""
         now = pygame.time.get_ticks()
         if now - self._last_update_ms >= self.update_interval_ms:
-            self._recompute_positions()
+            self.data.recompute_positions(self.renderer.width, self.renderer.height, self.renderer.margin)
             self._last_update_ms = now
 
     def draw(self, surface):
-        """
-        Dibuja el minimapa en la esquina indicada.
-        Llama a update_if_needed() internamente.
-        """
         self.update_if_needed()
-
-        sw = surface.get_width()
-        sh = surface.get_height()
-
-        # coordenadas de la esquina (posición final)
-        if self.position == "topright":
-            map_x = sw - (self.width + 2 * self.margin) - 12
-            map_y = 12
-        else:
-            # default top-left
-            map_x = 12
-            map_y = 12
-
-        # limpiar surface local
-        self.surface.fill((0, 0, 0, 0))
-
-        # fondo con ligero alpha
-        bg_surf = pygame.Surface((self.width + 2 * self.margin, self.height + 2 * self.margin), pygame.SRCALPHA)
-        bg_color = self.bg_color
-        if len(bg_color) == 4:
-            bg_surf.fill(bg_color)
-        else:
-            bg_surf.fill((*bg_color, 200))
-        self.surface.blit(bg_surf, (0, 0))
-
-        # borde
-        pygame.draw.rect(
-            self.surface,
-            self.border_color,
-            (0, 0, self.width + 2 * self.margin, self.height + 2 * self.margin),
-            width=2,
-            border_radius=6,
-        )
-
-        # inner rect (donde están los puntos)
-        inner_rect = pygame.Rect(self.margin, self.margin, self.width, self.height)
-        # opcional borde interior sutil
-        pygame.draw.rect(self.surface, (40, 40, 40), inner_rect, width=1)
-
-        # dibujar upgrades (azul pequeños)
-        for ux, uy in self._upgrade_positions:
-            # pequeños puntos azules
-            pygame.draw.circle(self.surface, (60, 140, 255), (ux, uy), 3)
-
-        # dibujar zombies (rojo)
-        for zx, zy in self._zombie_positions:
-            pygame.draw.circle(self.surface, (220, 50, 50), (zx, zy), 3)
-
-        # dibujar jugador (verde, un poco más grande)
-        px, py = self._player_pos
-        pygame.draw.circle(self.surface, (80, 220, 80), (px, py), 4)
-
-        # Opcional: pequeña cruz en el jugador
-        try:
-            pygame.draw.line(self.surface, (0, 0, 0), (px - 3, py), (px + 3, py), 1)
-            pygame.draw.line(self.surface, (0, 0, 0), (px, py - 3), (px, py + 3), 1)
-        except Exception:
-            pass
-
-        # Blit final en la pantalla
-        surface.blit(self.surface, (map_x, map_y))
-
-        # guardar último rect si es necesario para debugging o clicks
-        self.screen_rect = pygame.Rect(map_x, map_y, self.width + 2 * self.margin, self.height + 2 * self.margin)
+        self.renderer.draw(surface, self.data, self.position)
