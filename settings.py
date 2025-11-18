@@ -32,7 +32,7 @@ PLAYER_SPEED = 250  # Velocidad de movimiento en píxeles/segundo
 PLAYER_SIZE = 100  # Tamaño del sprite del jugador
 
 # --- Salud y Defensa ---
-PLAYER_BASE_HEALTH = 100      # Salud inicial del jugador
+PLAYER_BASE_HEALTH = 110      # Salud inicial del jugador
 PLAYER_BASE_ARMOR = 0         # Armadura inicial
 PLAYER_MAX_ARMOR = 100        # Capacidad máxima de armadura
 
@@ -284,9 +284,9 @@ UPGRADE_VALUES = {
 # Nota: Las balas tienen mayor probabilidad porque son CRÍTICAS para sobrevivir
 UPGRADE_SPAWN_CHANCE = {
     "vida": 10,          # 10% - Curación inmediata
-    "vida_extra": 8,     # 8% - Aumento permanente
+    "vida_extra": 90,     # 8% - Aumento permanente
     "armadura": 10,      # 10% - Defensa extra
-    "daño": 12,          # 12% - Más daño por bala
+    "daño": 1,          # 12% - Más daño por bala
     "cadencia": 12,      # 12% - Más disparos
     "velocidad": 8,      # 8% - Más movilidad
     "balas": 30,         # 30% - MÁS COMÚN (crítico para sobrevivir)
