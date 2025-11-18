@@ -1,35 +1,54 @@
 import pygame
+import math
 from utils.helpers import load_image_safe
+from colors import (
+    BLACK, WHITE,
+    DARK_BG, DARK_PANEL, LIGHT_GREY, DARK_GREY,
+    HP_RED_DARK, HP_RED_LIGHT, HP_LABEL,
+    SHIELD_BLUE_DARK, SHIELD_BLUE_LIGHT, SHIELD_LABEL, SHIELD_PULSE,
+    STAT_HP, STAT_ARMOR, STAT_SHIELD, STAT_SPEED, STAT_DAMAGE, STAT_RPM, STAT_AMMO, STAT_RESERVE,
+    BORDER_RED, BORDER_RED_INNER, BORDER_GREY, BORDER_HIGHLIGHT
+)
 
 class UIManager:
-    """Controla las tarjetas de estadísticas del jugador (HUD extendido con imagen y barras)."""
+    """Controla la tarjeta HUD extendida del jugador con barras, stats y efectos."""
+
+    CARD_SIZE = (780, 420)
+    PLAYER_PANEL_SIZE = (240, CARD_SIZE[1] - 40)
+    BAR_SIZE = (260, 20)
 
     def __init__(self, player):
         self.player = player
-        self.visible = False  # Visibilidad de la tarjeta
+        self.visible = False
+        self.pulse_timer = 0
 
-        # Cargar fondo de tarjeta
-        self.card_bg = load_image_safe("ui/card_bg.png")
-        if self.card_bg:
-            self.card_bg = pygame.transform.scale(self.card_bg, (780, 420))
+        self.card_bg = self._load_card_bg()
+        self.player_image = self._load_player_image()
+
+    # -------------------- CARGA DE RECURSOS --------------------
+    def _load_card_bg(self):
+        bg = load_image_safe("ui/card_bg.png")
+        if bg:
+            return pygame.transform.scale(bg, self.CARD_SIZE)
         else:
             print("[WARN] Fondo de card no encontrado, usando superficie básica.")
-            self.card_bg = pygame.Surface((780, 420), pygame.SRCALPHA)
-            self.card_bg.fill((25, 25, 25, 230))
+            surf = pygame.Surface(self.CARD_SIZE, pygame.SRCALPHA)
+            surf.fill((*DARK_BG, 230))
+            return surf
 
-        # Cargar imagen del jugador
-        self.player_image = load_image_safe("player/player_static.png")
-        if self.player_image:
-            self.player_image = pygame.transform.smoothscale(self.player_image, (180, 320))
-            self._clear_white_background()
+    def _load_player_image(self):
+        img = load_image_safe("player/player_static.png")
+        if img:
+            img = pygame.transform.smoothscale(img, (180, 320))
+            return self._clear_white_background(img)
         else:
             print("[WARN] Imagen del jugador no encontrada en UIManager.")
-            self.player_image = pygame.Surface((120, 240), pygame.SRCALPHA)
-            self.player_image.fill((255, 0, 0, 120))
+            surf = pygame.Surface((120, 240), pygame.SRCALPHA)
+            surf.fill((255, 0, 0, 120))
+            return surf
 
-    def _clear_white_background(self):
+    def _clear_white_background(self, img):
         """Quita los pixeles blancos claros de la imagen del jugador."""
-        img = self.player_image
         img.lock()
         for x in range(img.get_width()):
             for y in range(img.get_height()):
@@ -37,53 +56,85 @@ class UIManager:
                 if (r + g + b) / 3 > 200 and a > 0:
                     img.set_at((x, y), (0, 0, 0, 0))
         img.unlock()
-        self.player_image = img
+        return img
 
-    # ==================================================
-    # Mostrar / ocultar tarjeta
-    # ==================================================
+    # -------------------- INTERACCIÓN --------------------
     def toggle(self):
         self.visible = not self.visible
 
-    # ==================================================
-    # Dibuja un rectángulo con borde redondeado y doble contorno
-    # ==================================================
-    def draw_rounded_rect_with_border(self, surface, rect, color_bg, color_border, radius, border_thickness=3, separation=2):
-        x, y, w, h = rect
-        pygame.draw.rect(surface, color_bg, rect, border_radius=radius)
-        pygame.draw.rect(surface, color_border, rect, border_radius=radius, width=border_thickness)
-        inner_rect = pygame.Rect(x + separation, y + separation, w - 2 * separation, h - 2 * separation)
-        pygame.draw.rect(surface, color_border, inner_rect, border_radius=radius - 2, width=border_thickness)
+    # -------------------- UTILIDADES --------------------
+    def _draw_gradient_bar(self, surface, rect, color_start, color_end, ratio):
+        if ratio <= 0:
+            return
+        filled_width = max(1, int(rect.width * ratio))
+        for i in range(filled_width):
+            progress = i / filled_width
+            r = min(max(0, int(color_start[0] + (color_end[0] - color_start[0]) * progress)), 255)
+            g = min(max(0, int(color_start[1] + (color_end[1] - color_start[1]) * progress)), 255)
+            b = min(max(0, int(color_start[2] + (color_end[2] - color_start[2]) * progress)), 255)
+            pygame.draw.line(surface, (r, g, b), (rect.x + i, rect.y), (rect.x + i, rect.y + rect.height))
 
-    # ==================================================
-    # Dibuja la tarjeta del jugador
-    # ==================================================
+    # -------------------- DIBUJOS --------------------
     def draw_player_card(self, screen, font, screen_width, screen_height):
         if not self.visible or not self.player:
             return
+        self.pulse_timer += 0.05
+        pulse = abs(math.sin(self.pulse_timer)) * 0.2 + 0.8
 
-        # Fondo translúcido
-        overlay = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 140))
+        card_x, card_y = self._draw_overlay(screen, screen_width, screen_height)
+        self._draw_card_background(screen, card_x, card_y)
+        self._draw_card_borders(screen, card_x, card_y)
+        player_panel_rect = self._draw_player_panel(screen, card_x, card_y)
+        self._draw_player_image(screen, player_panel_rect)
+        line_x = self._draw_divider(screen, player_panel_rect, card_y)
+        stats_x, stats_y = line_x + 30, card_y + 50
+        stats = self._get_player_stats()
+        self._draw_stats(screen, font, stats, stats_x, stats_y)
+        self._draw_bars(screen, font, stats_x, stats_y + len(stats) * 36 + 20, pulse)
+
+    def _draw_overlay(self, screen, width, height):
+        overlay = pygame.Surface((width, height), pygame.SRCALPHA)
+        overlay.fill((*BLACK, 160))
         screen.blit(overlay, (0, 0))
+        card_x = (width - self.CARD_SIZE[0]) // 2
+        card_y = (height - self.CARD_SIZE[1]) // 2
+        return card_x, card_y
 
-        # Fondo de la tarjeta
-        card_rect = self.card_bg.get_rect(center=(screen_width // 2, screen_height // 2))
-        self.draw_rounded_rect_with_border(screen, card_rect, (20, 20, 20, 220), (200, 30, 30), radius=30, border_thickness=3)
+    def _draw_card_background(self, screen, x, y):
+        card_surf = pygame.Surface(self.CARD_SIZE, pygame.SRCALPHA)
+        for i in range(self.CARD_SIZE[1]):
+            brightness = min(255, max(0, DARK_BG[0] + int((i / self.CARD_SIZE[1]) * 15)))
+            pygame.draw.line(card_surf, (brightness, brightness, min(255, brightness + 5), 240),
+                             (0, i), (self.CARD_SIZE[0], i))
+        screen.blit(card_surf, (x, y))
+        # Sombra
+        shadow_surf = pygame.Surface((self.CARD_SIZE[0] + 10, self.CARD_SIZE[1] + 10), pygame.SRCALPHA)
+        shadow_surf.fill((*BLACK, 100))
+        screen.blit(shadow_surf, (x + 5, y + 5))
 
-        # Imagen del jugador
-        player_rect = self.player_image.get_rect(midleft=(card_rect.left + 120, card_rect.centery))
+    def _draw_card_borders(self, screen, x, y):
+        pygame.draw.rect(screen, BORDER_RED, (x, y, *self.CARD_SIZE), width=3, border_radius=15)
+        pygame.draw.rect(screen, BORDER_RED_INNER, (x + 4, y + 4, self.CARD_SIZE[0] - 8, self.CARD_SIZE[1] - 8),
+                         width=2, border_radius=13)
+
+    def _draw_player_panel(self, screen, card_x, card_y):
+        panel_rect = pygame.Rect(card_x + 20, card_y + 20, *self.PLAYER_PANEL_SIZE)
+        pygame.draw.rect(screen, (*DARK_PANEL, 200), panel_rect, border_radius=12)
+        pygame.draw.rect(screen, BORDER_GREY, panel_rect, width=2, border_radius=12)
+        return panel_rect
+
+    def _draw_player_image(self, screen, panel_rect):
+        player_rect = self.player_image.get_rect(center=panel_rect.center)
         screen.blit(self.player_image, player_rect)
 
-        # Línea divisoria
-        line_x = player_rect.right + 25
-        pygame.draw.line(screen, (200, 30, 30), (line_x, card_rect.top + 40), (line_x, card_rect.bottom - 40), 3)
+    def _draw_divider(self, screen, panel_rect, card_y):
+        line_x = panel_rect.right + 20
+        pygame.draw.line(screen, BORDER_RED, (line_x, card_y + 50), (line_x, card_y + self.CARD_SIZE[1] - 50), 3)
+        pygame.draw.line(screen, (*BORDER_HIGHLIGHT, 150),
+                         (line_x + 1, card_y + 50), (line_x + 1, card_y + self.CARD_SIZE[1] - 50), 1)
+        return line_x
 
-        # Texto y estadísticas
-        stats_x = line_x + 35
-        stats_y = card_rect.top + 40
-        spacing = 38
-
+    def _get_player_stats(self):
         hp = int(getattr(self.player, "health", 0))
         max_hp = int(getattr(self.player, "max_health", 100))
         shield = int(getattr(self.player, "shield", 0))
@@ -96,35 +147,66 @@ class UIManager:
         reserve = getattr(self.player.weapon, "reserve_ammo", getattr(self.player.weapon, "reserve", 0))
         armor = int(getattr(self.player, "armor", 0))
 
-        stats = [
-            ("Vida", f"{hp} / {max_hp}"),
-            ("Armadura", f"{armor}"),
-            ("Escudo", f"{shield} / {max_shield}"),
-            ("Velocidad", f"{speed}"),
-            ("Daño", f"{damage}"),
-            ("Cadencia (RPM)", f"{rpm}"),
-            ("Cargador", f"{current_ammo} / {max_ammo}"),
-            ("Balas (reserva)", f"{reserve}")
+        return [
+            ("Vida", f"{hp} / {max_hp}", STAT_HP),
+            ("Armadura", f"{armor}", STAT_ARMOR),
+            ("Escudo", f"{shield} / {max_shield}", STAT_SHIELD),
+            ("Velocidad", f"{speed}", STAT_SPEED),
+            ("Daño", f"{damage}", STAT_DAMAGE),
+            ("Cadencia (RPM)", f"{rpm}", STAT_RPM),
+            ("Cargador", f"{current_ammo} / {max_ammo}", STAT_AMMO),
+            ("Balas (reserva)", f"{reserve}", STAT_RESERVE)
         ]
 
-        for i, (label, value) in enumerate(stats):
-            text = font.render(f"{label}: {value}", True, (255, 255, 255))
-            screen.blit(text, (stats_x, stats_y + i * spacing))
+    def _draw_stats(self, screen, font, stats, x, y):
+        spacing = 36
+        for i, (label, value, color) in enumerate(stats):
+            y_pos = y + i * spacing
+            pygame.draw.circle(screen, color, (x - 12, y_pos + 8), 5)
+            pygame.draw.circle(screen, (*WHITE, 100), (x - 12, y_pos + 8), 5, 1)
 
-        # Barras de vida y escudo
-        bar_width = 260
-        bar_height = 18
-        bar_y_offset = stats_y + spacing * len(stats) + 15
-        pygame.draw.rect(screen, (60, 60, 60), (stats_x, bar_y_offset, bar_width, bar_height), border_radius=10)
-        pygame.draw.rect(screen, (60, 60, 60), (stats_x, bar_y_offset + 25, bar_width, bar_height), border_radius=10)
+            label_text = font.render(label + ":", True, LIGHT_GREY)
+            screen.blit(font.render(label + ":", True, BLACK), (x + 2, y_pos + 2))
+            screen.blit(label_text, (x, y_pos))
 
-        health_ratio = hp / max(1, max_hp)
-        pygame.draw.rect(screen, (255, 60, 60), (stats_x, bar_y_offset, int(bar_width * health_ratio), bar_height), border_radius=10)
+            value_text = font.render(value, True, color)
+            value_x = x + label_text.get_width() + 10
+            screen.blit(font.render(value, True, BLACK), (value_x + 2, y_pos + 2))
+            screen.blit(value_text, (value_x, y_pos))
 
-        shield_ratio = shield / max(1, max_shield)
-        pygame.draw.rect(screen, (100, 180, 255), (stats_x, bar_y_offset + 25, int(bar_width * shield_ratio), bar_height), border_radius=10)
+    def _draw_bars(self, screen, font, x, y, pulse):
+        bar_width, bar_height = self.BAR_SIZE
+        # VIDA
+        hp = int(getattr(self.player, "health", 0))
+        max_hp = int(getattr(self.player, "max_health", 100))
+        hp_ratio = max(0.0, min(1.0, hp / max(1, max_hp)))
+        hp_rect = pygame.Rect(x, y, bar_width, bar_height)
+        pygame.draw.rect(screen, DARK_PANEL, hp_rect, border_radius=10)
+        pygame.draw.rect(screen, DARK_GREY, hp_rect, width=2, border_radius=10)
+        if hp_ratio > 0:
+            filled = pygame.Rect(x + 2, y + 2, int((bar_width - 4) * hp_ratio), bar_height - 4)
+            self._draw_gradient_bar(screen, filled, HP_RED_DARK, HP_RED_LIGHT, 1.0)
+            highlight = pygame.Surface((filled.width, bar_height // 3), pygame.SRCALPHA)
+            highlight.fill((*WHITE, 40))
+            screen.blit(highlight, (filled.x, filled.y))
+        screen.blit(font.render("VIDA", True, HP_LABEL), (x + bar_width + 10, y))
 
-        hp_text = font.render("VIDA", True, (255, 255, 255))
-        shield_text = font.render("ESCUDO", True, (180, 220, 255))
-        screen.blit(hp_text, (stats_x + bar_width + 20, bar_y_offset - 2))
-        screen.blit(shield_text, (stats_x + bar_width + 20, bar_y_offset + 25))
+        # ESCUDO
+        shield = int(getattr(self.player, "shield", 0))
+        max_shield = int(getattr(self.player, "max_shield", 100))
+        shield_ratio = max(0.0, min(1.0, shield / max(1, max_shield)))
+        shield_rect = pygame.Rect(x, y + 30, bar_width, bar_height)
+        pygame.draw.rect(screen, DARK_PANEL, shield_rect, border_radius=10)
+        pygame.draw.rect(screen, DARK_GREY, shield_rect, width=2, border_radius=10)
+        if shield_ratio > 0:
+            filled = pygame.Rect(x + 2, y + 32, int((bar_width - 4) * shield_ratio), bar_height - 4)
+            self._draw_gradient_bar(screen, filled, SHIELD_BLUE_DARK, SHIELD_BLUE_LIGHT, 1.0)
+            highlight = pygame.Surface((filled.width, bar_height // 3), pygame.SRCALPHA)
+            highlight.fill((*WHITE, 50))
+            screen.blit(highlight, (filled.x, filled.y))
+            if shield_ratio > 0.7:
+                pulse_alpha = int(pulse * 60)
+                pulse_surf = pygame.Surface((filled.width, filled.height), pygame.SRCALPHA)
+                pulse_surf.fill((*SHIELD_PULSE, pulse_alpha))
+                screen.blit(pulse_surf, (filled.x, filled.y))
+        screen.blit(font.render("ESCUDO", True, SHIELD_LABEL), (x + bar_width + 10, y + 30))
