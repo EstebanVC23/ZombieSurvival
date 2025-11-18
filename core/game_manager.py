@@ -1,4 +1,4 @@
-# core/game_manager.py
+#no influye en nada el funcionamiento del código
 
 class GameManager:
     """

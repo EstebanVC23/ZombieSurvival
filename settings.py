@@ -53,6 +53,14 @@ WEAPON_BULLET_SPEED = 1200        # Velocidad de las balas en píxeles/segundo
 BULLET_BASE_LIFETIME = 2.0        # Tiempo de vida de cada bala en segundos
 
 # ===================================================
+# SPAWNER - CONTROL DE OLAS Y GENERACIÓN DE ZOMBIES
+# ===================================================
+
+SPAWNER_TIME_BETWEEN_WAVES = 3.0
+SPAWNER_SPAWN_INTERVAL = 0.5
+SPAWNER_MIN_DISTANCE_TO_PLAYER = 450
+
+# ===================================================
 # ZOMBIES - ESTADÍSTICAS BASE POR TIPO
 # ===================================================
 
@@ -194,6 +202,28 @@ ZOMBIE_ATTACK_COOLDOWN = {
     "tank":   1.5,
     "boss":   2.0
 }# segundos entre ataques
+
+
+# ===================================================
+# PROBABILIDADES DE SPAWN DE ZOMBIES POR TIPO Y OLA
+# ===================================================
+
+# Cada subdiccionario representa un rango de olas y las probabilidades base de cada tipo de zombie
+ZOMBIE_SPAWN_CHANCE_BY_WAVE = {
+    "1-5":   {"common": 1.0,   "fast": 0.0,   "tank": 0.0,   "boss": 0.0},   # solo comunes
+    "6-7":   {"common": 0.7,   "fast": 0.3,   "tank": 0.0,   "boss": 0.0},   # agregamos fast
+    "8-9":   {"common": 0.6,   "fast": 0.3,   "tank": 0.1,   "boss": 0.0},   # agregamos tank
+    "10+":   {"common": 0.45,   "fast": 0.3,   "tank": 0.2,  "boss": 0.05}    # olas ≥10, multiplicador aplicado luego
+}
+
+# Multiplicadores para olas múltiplo de 10 (aumenta chance de bosses, tanks y fast)
+SPAWNER_MULTIPLIER_WAVE_10 = {
+    "boss": 5.5,    # +150% sobre la chance base
+    "fast": 1.8,    # +50%
+    "tank": 1.0,    # +50%
+    "common": 0.5   # disminuye la chance de comunes
+}
+
 
 # ===================================================
 # SISTEMA UNIFICADO DE DROPS DE MEJORAS

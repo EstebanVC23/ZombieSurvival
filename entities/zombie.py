@@ -10,10 +10,11 @@ from settings import (
     ZOMBIE_BOSS_HP, ZOMBIE_BOSS_SPEED, ZOMBIE_BOSS_SIZE, ZOMBIE_BOSS_DAMAGE,
     ZOMBIE_RARITY_MULT, ZOMBIE_RARITY_UPGRADE_COUNT,
     ZOMBIE_RARITY_SCORE_MULT, ZOMBIE_MIN_DISTANCE_TO_PLAYER,
+    ZOMBIE_LEVEL_UP_STATS,
     ZOMBIE_SCORE_VALUES, ZOMBIE_UPGRADE_DROP_SYSTEM,
     ZOMBIE_ATTACK_COOLDOWN, ZOMBIE_DETECTION_RADIUS, ZOMBIE_ALERT_RADIUS,
     ZOMBIE_WANDER_CHANGE_DIR_CHANCE, ZOMBIE_WANDER_SPEED_MULT,
-    ZOMBIE_REPULSION_RADIUS, ZOMBIE_REPULSION_FORCE,
+    ZOMBIE_REPULSION_RADIUS, ZOMBIE_REPULSION_FORCE
 )
 from utils.helpers import load_image_safe, clean_image_background
 from utils.sound_utils import load_sound, SoundUtils
@@ -28,17 +29,6 @@ class ZombieStats:
         "tank":   {"hp": ZOMBIE_TANK_HP,   "speed": ZOMBIE_TANK_SPEED,   "radius": ZOMBIE_TANK_SIZE//2,   "damage": ZOMBIE_TANK_DAMAGE},
         "boss":   {"hp": ZOMBIE_BOSS_HP,   "speed": ZOMBIE_BOSS_SPEED,   "radius": ZOMBIE_BOSS_SIZE//2,   "damage": ZOMBIE_BOSS_DAMAGE},
     }
-
-    LEVEL_UP_STATS = {
-        "common": {"hp": 3,  "damage": 2,  "speed": 1.5},
-        "fast":   {"hp": 2,  "damage": 1,  "speed": 4},
-        "tank":   {"hp": 8,  "damage": 4, "speed": 0.8},
-        "boss":   {"hp": 20, "damage": 10, "speed": 1},
-    }
-
-    @staticmethod
-    def roll_rarity():
-        return "common"
 
     @staticmethod
     def build(type_name, level, rarity):
@@ -57,42 +47,71 @@ class ZombieStats:
         if "damage" in chosen: dmg *= rarity_mult
 
         if level > 1:
-            lv = ZombieStats.LEVEL_UP_STATS[type_name]
+            lv = ZOMBIE_LEVEL_UP_STATS[type_name]
             hp += lv["hp"] * (level - 1)
             dmg += lv["damage"] * (level - 1)
             speed += lv["speed"] * (level - 1)
 
         return {"hp": hp, "speed": speed, "damage": dmg, "radius": radius}
 
-# ================================================================
-# SPRITES
-# ================================================================
+
+# =========================================
+# ZombieSprites
+# =========================================
 class ZombieSprites:
     def __init__(self, type_name, radius):
         self.radius = radius
-        base = os.path.join("zombie", type_name)
-        f = load_image_safe(os.path.join(base, "common_frente.png"))
-        b = load_image_safe(os.path.join(base, "common_espalda.png"))
-        s = load_image_safe(os.path.join(base, "common_lateral.png"))
         self.frames = {}
-        if f and b and s:
-            self.frames["front"] = clean_image_background(pygame.transform.scale(f, (radius*2, radius*2)))
-            self.frames["back"] = clean_image_background(pygame.transform.scale(b, (radius*2, radius*2)))
-            self.frames["left"] = clean_image_background(pygame.transform.scale(s, (radius*2, radius*2)))
-            self.frames["right"] = pygame.transform.flip(self.frames["left"], True, False)
-        raw_dead = load_image_safe(os.path.join(base, "dead.png"))
-        self.dead_sprite = clean_image_background(pygame.transform.scale(raw_dead, (radius*2, radius*2))) if raw_dead else None
+
+        base_path = os.path.join("zombie", type_name)
+        f = load_image_safe(os.path.join(base_path, "frente.png"))
+        b = load_image_safe(os.path.join(base_path, "espalda.png"))
+        l = load_image_safe(os.path.join(base_path, "lateral.png"))
+        raw_dead = load_image_safe(os.path.join(base_path, "dead.png"))
+
+        if not f or not b or not l:
+            common_base = os.path.join("zombie", "common")
+            f = f or load_image_safe(os.path.join(common_base, "frente.png"))
+            b = b or load_image_safe(os.path.join(common_base, "espalda.png"))
+            l = l or load_image_safe(os.path.join(common_base, "lateral.png"))
+            raw_dead = raw_dead or load_image_safe(os.path.join(common_base, "dead.png"))
+
+        if not f:
+            f = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(f, (140,180,60), (radius, radius), radius)
+        if not b:
+            b = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(b, (120,160,50), (radius, radius), radius)
+        if not l:
+            l = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(l, (100,140,40), (radius, radius), radius)
+        if not raw_dead:
+            raw_dead = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(raw_dead, (80,80,80), (radius, radius), radius)
+
+        self.frames["front"] = clean_image_background(pygame.transform.scale(f, (radius*2, radius*2)))
+        self.frames["back"] = clean_image_background(pygame.transform.scale(b, (radius*2, radius*2)))
+        self.frames["left"] = clean_image_background(pygame.transform.scale(l, (radius*2, radius*2)))
+        self.frames["right"] = pygame.transform.flip(self.frames["left"], True, False)
+
+        self.dead_sprite = clean_image_background(pygame.transform.scale(raw_dead, (radius*2, radius*2)))
 
     def get_frame(self, direction):
-        return self.frames.get(direction)
+        return self.frames.get(direction, self.frames["front"])
 
     def get_dead(self, direction):
         img = self.dead_sprite
-        if not img: return None
-        if direction == "back": return pygame.transform.rotate(img, 180)
-        if direction == "left": return pygame.transform.rotate(img, -90)
-        if direction == "right": return pygame.transform.rotate(img, 90)
+        if not img:
+            img = pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(img, (80,80,80), (self.radius, self.radius), self.radius)
+        if direction == "back":
+            return pygame.transform.rotate(img, 180)
+        if direction == "left":
+            return pygame.transform.rotate(img, -90)
+        if direction == "right":
+            return pygame.transform.rotate(img, 90)
         return img
+
 
 # ================================================================
 # IA DE ZOMBIES
@@ -100,25 +119,29 @@ class ZombieSprites:
 class ZombieAI:
     @staticmethod
     def choose_direction_from_vector(vec):
+        if vec.length() == 0:
+            return "front"
         angle = math.degrees(math.atan2(vec.y, vec.x))
-        if -45 <= angle <= 45: return "right"
-        elif 45 < angle <= 135: return "down"
-        elif -135 <= angle < -45: return "up"
-        else: return "left"
+        if -45 <= angle < 45:
+            return "right"
+        elif 45 <= angle < 135:
+            return "down"
+        elif -135 <= angle < -45:
+            return "up"
+        else:
+            return "left"
 
     @staticmethod
     def move_towards(zombie, target_pos, dt, all_zombies=None):
         move_vec = target_pos - zombie.pos
         dist_to_player = move_vec.length()
-
-        # Evitar que zombie se meta dentro del player
         min_dist = zombie.radius + ZOMBIE_MIN_DISTANCE_TO_PLAYER
+        if hasattr(zombie, 'target_player') and zombie.target_player:
+            min_dist += zombie.target_player.radius
         if dist_to_player <= min_dist:
-            return  # No moverse más cerca, sigue atacando
+            return
 
         move_dir = move_vec.normalize()
-
-        # Repulsión entre zombies
         if all_zombies:
             for other in all_zombies:
                 if other == zombie or other.dead: continue
@@ -128,22 +151,45 @@ class ZombieAI:
                     move_dir += offset.normalize() * (ZOMBIE_REPULSION_FORCE / dist)
             move_dir = move_dir.normalize()
 
-        # Mover zombie
         zombie.pos += move_dir * zombie.speed * dt
         zombie.rect.center = (round(zombie.pos.x), round(zombie.pos.y))
-        zombie.direction = ZombieAI.choose_direction_from_vector(move_vec)
-
+        dir_map = {"up": "back", "down": "front", "left": "left", "right": "right"}
+        zombie.direction = dir_map.get(ZombieAI.choose_direction_from_vector(move_vec), "front")
+        zombie.image = zombie.sprites.get_frame(zombie.direction)
 
     @staticmethod
     def wander(zombie, dt):
+        # cambia dirección aleatoria si es la primera vez o por probabilidad
         if not hasattr(zombie, "_wander_dir") or random.random() < ZOMBIE_WANDER_CHANGE_DIR_CHANCE:
             angle = random.uniform(0, 2*math.pi)
             zombie._wander_dir = pygame.Vector2(math.cos(angle), math.sin(angle))
+
+        # moverse
         zombie.pos += zombie._wander_dir * zombie.speed * dt * ZOMBIE_WANDER_SPEED_MULT
-        zombie.pos.x = max(0, min(WORLD_WIDTH, zombie.pos.x))
-        zombie.pos.y = max(0, min(WORLD_HEIGHT, zombie.pos.y))
+
+        # rebote si choca con bordes
+        bounced = False
+        if zombie.pos.x < 0:
+            zombie.pos.x = 0
+            bounced = True
+        elif zombie.pos.x > WORLD_WIDTH:
+            zombie.pos.x = WORLD_WIDTH
+            bounced = True
+        if zombie.pos.y < 0:
+            zombie.pos.y = 0
+            bounced = True
+        elif zombie.pos.y > WORLD_HEIGHT:
+            zombie.pos.y = WORLD_HEIGHT
+            bounced = True
+        if bounced:
+            angle = random.uniform(0, 2*math.pi)
+            zombie._wander_dir = pygame.Vector2(math.cos(angle), math.sin(angle))
+
         zombie.rect.center = (round(zombie.pos.x), round(zombie.pos.y))
-        zombie.direction = ZombieAI.choose_direction_from_vector(zombie._wander_dir)
+        dir_map = {"up": "back", "down": "front", "left": "left", "right": "right"}
+        zombie.direction = dir_map.get(ZombieAI.choose_direction_from_vector(zombie._wander_dir), "front")
+        zombie.image = zombie.sprites.get_frame(zombie.direction)
+
 
 # ================================================================
 # SONIDO DE ZOMBIES
@@ -167,6 +213,7 @@ class ZombieSound:
             try: self.sound.stop()
             except: pass
 
+
 # ================================================================
 # ZOMBIE PRINCIPAL
 # ================================================================
@@ -183,7 +230,7 @@ class Zombie(pygame.sprite.Sprite):
 
         self.type = ztype
         self.level = level
-        self.rarity = rarity if rarity else ZombieStats.roll_rarity()
+        self.rarity = rarity
 
         stats = ZombieStats.build(ztype, level, self.rarity)
         self.hp = stats["hp"]
@@ -193,13 +240,11 @@ class Zombie(pygame.sprite.Sprite):
 
         self.attack_timer = 0.0
         self.alerted = False
-        self.score_value = int(ZOMBIE_SCORE_VALUES[ztype] * 1)
+        self.score_value = int(ZOMBIE_SCORE_VALUES[ztype] * ZOMBIE_RARITY_SCORE_MULT.get(self.rarity, 1))
         self.drop_bonus = 0
 
         self.sprites = ZombieSprites(ztype, self.radius)
-        img = self.sprites.get_frame("front")
-        self.image = img if img else pygame.Surface((self.radius*2, self.radius*2), pygame.SRCALPHA)
-        if not img: pygame.draw.circle(self.image, (140,180,60), (self.radius, self.radius), self.radius)
+        self.image = self.sprites.get_frame("front")
         self.rect = self.image.get_rect(center=self.pos)
 
         self.sound = ZombieSound(self)
@@ -211,26 +256,19 @@ class Zombie(pygame.sprite.Sprite):
             return
         if not game.player: return
 
-        # Actualizar sonido
         self.sound.update_volume(game.player.pos)
-
-        # Distancia al jugador
         dist_to_player = self.pos.distance_to(game.player.pos)
 
-        # Si detecta jugador
         if dist_to_player <= ZOMBIE_DETECTION_RADIUS or self.alerted:
             self.alerted = True
 
-            # Alertar zombies cercanos
             for z in game.zombies:
                 if z == self or z.dead: continue
                 if z.pos.distance_to(self.pos) <= ZOMBIE_ALERT_RADIUS:
                     z.alerted = True
 
-            # Perseguir jugador
             ZombieAI.move_towards(self, game.player.pos, dt, all_zombies=game.zombies)
 
-            # Ataque con cooldown
             self.attack_timer += dt
             cooldown = ZOMBIE_ATTACK_COOLDOWN.get(self.type, 1.0)
             if self.attack_timer >= cooldown:
@@ -238,37 +276,26 @@ class Zombie(pygame.sprite.Sprite):
                     game.player.take_damage(self.damage)
                 self.attack_timer = 0.0
         else:
-            # Vagando
             ZombieAI.wander(self, dt)
 
     def take_damage(self, dmg, game=None):
-        if self.dead:
-            return
-
-        # Restar vida
+        if self.dead: return
         self.hp -= dmg
-
-        # ALERTAR AL ZOMBIE CUANDO ES ATACADO
         self.alerted = True
 
-        # Alertar a los zombies cercanos
         if game:
             for z in game.zombies:
                 if z != self and not z.dead and z.pos.distance_to(self.pos) <= ZOMBIE_ALERT_RADIUS:
                     z.alerted = True
 
-        # Si aún tiene vida, solo alertado, no muerto
-        if self.hp > 0:
-            return
+        if self.hp > 0: return
 
-        # Zombie muere
         self.dead = True
         self.dead_timer = 0
         self.damage = 0
         self.radius = 0
         self.sound.stop()
 
-        # Drop de upgrades y puntaje
         if game:
             cfg = ZOMBIE_UPGRADE_DROP_SYSTEM.get(self.type)
             if cfg:
@@ -278,9 +305,7 @@ class Zombie(pygame.sprite.Sprite):
                     Upgrade.spawn_from_zombie(game.upgrades, self)
             game.player.score += self.score_value
 
-        # Sprite de cadáver
         self.dead_image = self.sprites.get_dead(self.direction)
-
 
     def _update_death(self, dt):
         self.dead_timer += dt

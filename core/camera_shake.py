@@ -1,4 +1,5 @@
-# core/camera_shake.py
+#no influye en nada el funcionamiento del código
+
 import random
 import pygame
 

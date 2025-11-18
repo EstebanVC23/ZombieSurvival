@@ -1,4 +1,5 @@
-# core/stats.py
+#no influye en nada el funcionamiento del código
+
 from typing import Dict
 from core.particles import get_rarity_multiplier
 

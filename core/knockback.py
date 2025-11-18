@@ -1,3 +1,6 @@
+
+#no influye en nada el funcionamiento del código
+
 import pygame
 
 

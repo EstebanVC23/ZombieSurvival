@@ -1,4 +1,3 @@
-# core/game.py
 import pygame
 import random
 import sys
@@ -51,9 +50,6 @@ class Game:
         self.world_width = WORLD_WIDTH
         self.world_height = WORLD_HEIGHT
 
-        # ==== SPAWNER ACTUALIZADO (con rarezas) ====
-        self.spawner = Spawner(self)
-
         # Cursores
         self.cursor_game = load_cursor("ui/cursor_game.png", (32, 32))
         self.cursor_menu = load_cursor("ui/cursor_menu.png", (20, 20))
@@ -85,23 +81,8 @@ class Game:
         self.pause_menu = PauseMenu(self.screen, self.screen_width, self.screen_height)
         self.ui_manager = UIManager(self.player)
 
-        # ==== ZOMBIES INICIALES LEJOS DEL PLAYER ====
-        min_distance = max(600, int((self.world_width + self.world_height) / 10))
-
-        for _ in range(8):
-            pos = self._spawn_initial_far(min_distance)
-            self.zombies.add(Zombie(pos, "common", rarity="common"))
-
-    # ============================================================
-    def _spawn_initial_far(self, min_distance):
-        """Genera posiciones iniciales lejos del jugador."""
-        for _ in range(40):
-            x = random.randint(0, self.world_width)
-            y = random.randint(0, self.world_height)
-            pos = pygame.Vector2(x, y)
-            if pos.distance_to(self.player.pos) >= min_distance:
-                return pos
-        return pygame.Vector2(self.world_width, self.world_height)
+        # ==== Spawner completo
+        self.spawner = Spawner(self)
 
     # ============================================================
     def run(self):
@@ -186,10 +167,10 @@ class Game:
 
     # ============================================================
     def draw(self):
-        # Fondo del mundo
+        # Fondo
         self.screen.fill((30, 30, 30))
 
-        # Marco del mundo
+        # Marco mundo
         pygame.draw.rect(
             self.screen,
             (60, 60, 60),
@@ -239,6 +220,30 @@ class Game:
         pygame.display.flip()
 
     # ============================================================
+    
+    def load_resources(self):
+        """Pantalla de carga bloqueante."""
+        if pygame.mixer.get_init() and pygame.mixer.music.get_busy():
+            pygame.mixer.music.pause()
+
+        self.loading_screen.draw()
+        pygame.display.flip()
+
+        resources = [
+            "textures", "player", "zombies", "bullets",
+            "upgrades", "effects", "hud", "sounds", "map"
+        ]
+
+        total = len(resources)
+        for i, r in enumerate(resources, 1):
+            pygame.time.delay(200)
+            self.loading_screen.update_progress(i / total)
+
+        if pygame.mixer.get_init():
+            pygame.mixer.music.unpause()
+
+    # ============================================================
+
     def reset_game(self):
         """Reinicia el juego completamente."""
         self.lose_menu = None
@@ -261,31 +266,3 @@ class Game:
 
         # Reset Spawner
         self.spawner = Spawner(self)
-
-        # Zombies iniciales lejos (rareza común)
-        min_distance = max(600, int((self.world_width + self.world_height) / 10))
-        for _ in range(8):
-            pos = self._spawn_initial_far(min_distance)
-            self.zombies.add(Zombie(pos, "common", rarity="common"))
-
-    # ============================================================
-    def load_resources(self):
-        """Pantalla de carga bloqueante."""
-        if pygame.mixer.get_init() and pygame.mixer.music.get_busy():
-            pygame.mixer.music.pause()
-
-        self.loading_screen.draw()
-        pygame.display.flip()
-
-        resources = [
-            "textures", "player", "zombies", "bullets",
-            "upgrades", "effects", "hud", "sounds", "map"
-        ]
-
-        total = len(resources)
-        for i, r in enumerate(resources, 1):
-            pygame.time.delay(200)
-            self.loading_screen.update_progress(i / total)
-
-        if pygame.mixer.get_init():
-            pygame.mixer.music.unpause()
