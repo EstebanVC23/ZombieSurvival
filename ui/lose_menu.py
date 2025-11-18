@@ -1,6 +1,7 @@
+# ui/lose_menu.py
 import pygame
 import sys
-from utils.helpers import load_image_safe
+from utils.helpers import load_image_safe, load_music
 from ui.buttons import ButtonWithBackground, Buttons
 
 class LoseMenu:
@@ -47,9 +48,35 @@ class LoseMenu:
             game.load_resources()
             game.reset_game()
         elif clicked == "MAIN MENU":
-            game.return_to_main_menu = True
+            # Detener todos los sonidos de zombies
+            if hasattr(game, "zombies"):
+                for z in game.zombies:
+                    if hasattr(z, "sound") and z.sound:
+                        z.sound.stop()
+
+            # Cerrar el lose menu
             game.lose_menu = None
             game.paused = False
+
+            # Cambiar resolución a la del main menu
+            screen_width, screen_height = 700, 700
+            game.screen = pygame.display.set_mode((screen_width, screen_height), pygame.NOFRAME)
+            pygame.display.set_caption("Zombie Survival: Endless Apocalypse")
+
+            # Reiniciar el cursor al menú
+            game.current_cursor = game.cursor_menu
+
+            # Marcar para volver al main menu
+            game.return_to_main_menu = True
+
+            # Iniciar música del menú
+            load_music("ambient.mp3", volume=0.6, loop=-1)
+
         elif clicked == "EXIT":
+            # Detener todos los sonidos de zombies antes de salir
+            if hasattr(game, "zombies"):
+                for z in game.zombies:
+                    if hasattr(z, "sound") and z.sound:
+                        z.sound.stop()
             pygame.quit()
             sys.exit()

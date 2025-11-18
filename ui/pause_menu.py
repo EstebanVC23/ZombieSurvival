@@ -1,5 +1,4 @@
 import pygame
-import sys
 from utils.helpers import load_image_safe
 from ui.buttons import ButtonTextOnly, Buttons
 
@@ -12,42 +11,60 @@ class PauseMenu:
         self.screen_width = screen_width
         self.screen_height = screen_height
 
+        # Imagen de fondo del menú
         self.image = load_image_safe("menus/pause_menu.png")
         if self.image:
-            self.image = pygame.transform.scale(self.image, (500,500))
+            self.image = pygame.transform.scale(self.image, (500, 500))
 
+        # Botones
         font_path = "assets/fonts/PressStart2P-Regular.ttf"
         options = ["Resume Game", "Settings", "Main Menu", "Exit Game"]
-        center_x = screen_width//2
-        start_y = screen_height//2
+        center_x = screen_width // 2
+        start_y = screen_height // 2
         spacing = 60
         buttons_list = [
-            ButtonTextOnly(opt, (center_x, start_y+i*spacing), font_path,
+            ButtonTextOnly(opt, (center_x, start_y + i * spacing), font_path,
                            text_color=text_color, hover_color=hover_color)
-            for i,opt in enumerate(options)
+            for i, opt in enumerate(options)
         ]
         self.buttons = Buttons(screen, buttons_list)
 
     def draw(self):
+        """Dibuja overlay y menú de pausa"""
         overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
-        overlay.fill((0,0,0,100))
-        self.screen.blit(overlay, (0,0))
+        overlay.fill((0, 0, 0, 100))  # semi-transparente
+        self.screen.blit(overlay, (0, 0))
 
         if self.image:
-            rect = self.image.get_rect(center=(self.screen_width//2, self.screen_height//2))
+            rect = self.image.get_rect(center=(self.screen_width // 2, self.screen_height // 2))
             self.screen.blit(self.image, rect)
 
         self.buttons.draw()
 
     def handle_click(self, mouse_pos, game_instance):
+        """Maneja clicks sobre botones"""
         clicked = self.buttons.handle_click(mouse_pos)
         if clicked == "Resume Game":
             game_instance.paused = False
             game_instance.current_cursor = game_instance.cursor_game
+
         elif clicked == "Settings":
             print("[DEBUG] Abrir ajustes (pendiente)")
+
         elif clicked == "Main Menu":
-            pygame.quit()
-            sys.exit()
+            # Marcar que queremos volver al main menu
+            game_instance.paused = False
+            game_instance.return_to_main_menu = True
+
+            # Detener música actual del juego
+            try:
+                pygame.mixer.music.stop()
+            except Exception:
+                pass
+
+            # Cambiar de fullscreen a ventana normal del menú
+            game_instance.screen = pygame.display.set_mode((700, 700), pygame.NOFRAME)
+            pygame.display.set_caption("Zombie Survival: Endless Apocalypse")
+
         elif clicked == "Exit Game":
             game_instance.running = False

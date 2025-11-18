@@ -15,10 +15,26 @@
 - Pantalla de puntuaciones altas
 - algunas opciones en el menú (sonido, controles, etc)
 - Crear la tabla de puntuaciones altas y guardado en archivo'''
+import pygame, sys
 from ui.main_menu import main_menu
 from core.game import Game
 
 if __name__ == "__main__":
-    main_menu()     # mostrar menú
-    game = Game()   # lanzar juego principal
-    game.run()
+    pygame.init()
+
+    while True:
+        # Mostrar menú principal
+        option = main_menu()  # Devuelve "START_GAME" o "EXIT"
+
+        if option == "EXIT":
+            pygame.quit()
+            sys.exit()
+        elif option == "START_GAME":
+            # Crear instancia de juego
+            game = Game()
+            game.load_resources()
+            game.run()
+
+            # Si no se quiere volver al menú principal, salir del launcher
+            if not game.return_to_main_menu:
+                break

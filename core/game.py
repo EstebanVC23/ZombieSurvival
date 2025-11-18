@@ -1,3 +1,4 @@
+# core/game.py
 import pygame
 import sys
 from settings import *
@@ -13,7 +14,7 @@ from ui.loading_screen import LoadingScreen
 
 
 class EventHandler:
-    """Maneja los eventos de pygame."""
+    """Maneja eventos de pygame."""
 
     def __init__(self, game):
         self.game = game
@@ -69,9 +70,9 @@ class Updater:
             for entity in list(group):
                 if hasattr(entity, "update"):
                     try:
-                        entity.update(dt, self.game)  # Intenta pasar dt y game
+                        entity.update(dt, self.game)
                     except TypeError:
-                        entity.update(dt)  # Si falla, pasa solo dt
+                        entity.update(dt)
 
         # Colisiones upgrades
         picked = pygame.sprite.spritecollide(self.game.player, self.game.upgrades, dokill=True)
@@ -130,7 +131,6 @@ class Drawer:
 
         # Cursor
         self.draw_cursor()
-
         pygame.display.flip()
 
     def draw_group(self, group):
@@ -157,7 +157,7 @@ class Game:
         except Exception:
             pass
 
-        # Pantalla fullscreen
+        # Pantalla fullscreen inicial
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         info = pygame.display.Info()
         self.screen_width, self.screen_height = info.current_w, info.current_h
@@ -184,7 +184,6 @@ class Game:
         self.cursor_game = load_cursor("ui/cursor_game.png", (32, 32))
         self.cursor_menu = load_cursor("ui/cursor_menu.png", (20, 20))
         self.current_cursor = self.cursor_game
-        self.cursor_offset = pygame.Vector2(16, 16)
 
         # Inicializar estado del juego
         self.initialize_game_state()
@@ -219,13 +218,23 @@ class Game:
         while self.running:
             dt = self.clock.tick(FPS) / 1000
             self.event_handler.handle_events()
+
+            # Volver al main menu
             if self.return_to_main_menu:
-                return
+                # Detener sonidos zombies
+                for z in self.zombies:
+                    if hasattr(z, "sound") and z.sound:
+                        z.sound.stop()
+                # Limpiar zombies
+                self.zombies.empty()
+                return  # vuelve al main menu
+
             if not self.paused:
                 self.updater.update(dt)
             self.drawer.draw()
         pygame.quit()
         sys.exit()
+
 
     # ============================================================
     # Recursos

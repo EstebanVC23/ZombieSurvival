@@ -1,6 +1,7 @@
+# main_menu.py
 import pygame
 import sys
-from utils.helpers import load_image_safe
+from utils.helpers import load_image_safe, load_music
 from core.game import Game
 from ui.buttons import ButtonTextOnly, Buttons
 
@@ -65,7 +66,7 @@ menu_positions = [(SCREEN_WIDTH // 2, 400),
                   (SCREEN_WIDTH // 2, 580)]
 
 buttons_list = [
-    ButtonTextOnly(text, pos, font_path, base_size=28, hover_size=32, 
+    ButtonTextOnly(text, pos, font_path, base_size=28, hover_size=32,
                    text_color=WHITE, hover_color=HIGHLIGHT)
     for text, pos in zip(menu_items, menu_positions)
 ]
@@ -73,16 +74,16 @@ menu_buttons = Buttons(screen, buttons_list)
 
 # --- Main Menu ---
 def main_menu():
-    running = True
-
-    # Música opcional
-    sound_path = "sounds/ambient.mp3"
-    if pygame.mixer and load_image_safe(sound_path):
+    """Loop principal del menú de inicio"""
+    # --- Inicializar música de fondo ---
+    if not pygame.mixer.get_init():
         pygame.mixer.init()
-        pygame.mixer.music.load(sound_path)
-        pygame.mixer.music.set_volume(0.6)
-        pygame.mixer.music.play(-1)
+    music_started = load_music("ambient.mp3", volume=0.6, loop=-1)
+    if not music_started:
+        print("[WARN] No se pudo iniciar la música de fondo.")
 
+    mouse_pos = pygame.mouse.get_pos()
+    running = True
     while running:
         mouse_pos = pygame.mouse.get_pos()
         for event in pygame.event.get():
@@ -92,25 +93,25 @@ def main_menu():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 clicked = menu_buttons.handle_click(mouse_pos)
                 if clicked == "START GAME":
-                    game = Game()
+                    game = Game()  # Mixer se inicializa dentro de Game()
                     game.load_resources()
                     game.run()
-                elif clicked == "SETTINGS":
-                    print("[INFO] Configuración (pendiente)")
-                elif clicked == "HIGH SCORES":
-                    print("[INFO] Puntuaciones (pendiente)")
+                    running = False
                 elif clicked == "EXIT":
                     pygame.quit()
                     sys.exit()
 
-        # --- Dibujar ---
+        # Limpiar la pantalla antes de dibujar
+        screen.fill((0,0,0))
         screen.blit(background, (0, 0))
         menu_buttons.draw()
+
         if cursor_menu:
             screen.blit(cursor_menu, (mouse_pos[0]-8, mouse_pos[1]-8))
 
         pygame.display.flip()
         clock.tick(FPS)
+
 
 # --- Ejecución ---
 if __name__ == "__main__":
