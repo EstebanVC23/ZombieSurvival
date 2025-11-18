@@ -3,7 +3,6 @@ import os
 import random
 import math
 from settings import (
-    ASSETS_IMAGES,
     UPGRADE_ICON_SIZE,
     UPGRADE_SPAWN_CHANCE,
     UPGRADE_FALL_SPEED,

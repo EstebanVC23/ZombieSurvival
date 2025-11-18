@@ -1,0 +1,279 @@
+🎭 Concepto Central
+Cada 10 oleadas = cambio de bioma natural + pausa narrativa cinematográfica que oculta la transición del escenario.
+Terrenos disponibles: Sand, Grass, Forest Ground, Snow, Ice, Mud, Rock, Water (lento), Lava (daño)
+Estructura: 10 biomas × 10 oleadas = 100 oleadas con cierre narrativo + modo infinito en el último bioma.
+
+🌅 OLEADA 0: Prólogo - "El Último Sueño"
+Bioma: Grass (tutorial básico)
+Cinemática de Inicio:
+Pantalla negra. Sonido de viento suave.
+Texto en pantalla:
+
+"¿Cuánto tiempo llevas corriendo?"
+"¿Cuántas tierras has cruzado?"
+"Ya no recuerdas de dónde vienes... solo sabes que no puedes detenerte."
+
+Fade in: Tu personaje despierta en un prado vacío. A lo lejos, las siluetas se acercan.
+Narrador (voz en off):
+
+"Este mundo ya no tiene dueño. Solo tiene sobrevivientes... y lo que alguna vez fueron humanos."
+
+[INICIO DEL JUEGO]
+
+🌾 OLEADAS 1-10: "Praderas del Primer Día"
+Bioma: Grass + árboles dispersos + arbustos
+Narrativa Pre-Oleada 10:
+Pantalla se oscurece tras eliminar al último zombi de la oleada 10
+Texto:
+
+"Las praderas verdes solían ser tranquilas. Ahora solo son campos de batalla."
+"Los árboles miran en silencio. Los arbustos esconden cuerpos."
+"No hay ciudades aquí. No hay refugio. Solo tierra abierta."
+"A lo lejos, la hierba cambia de color. El verde se vuelve amarillo."
+"El viento cambia. Huele a sequía."
+
+Sonido de viento seco. Fade out.
+[TRANSICIÓN A BIOMA 2]
+
+🏜️ OLEADAS 11-20: "Desierto de la Sed Eterna"
+Bioma: Sand + cactus + rocas áridas
+Narrativa Pre-Oleada 20:
+Pantalla amarilla por polvo del desierto
+Texto:
+
+"La arena quema bajo tus pies. El sol es un enemigo silencioso."
+"Los cactus son las únicas cosas que crecen aquí. Y tú. Tú también creces más fuerte."
+"No hay agua. No hay sombra. Solo dunas infinitas."
+"Los zombis emergen de la arena como si el desierto mismo los escupiera."
+"Al norte, las dunas se vuelven más oscuras. La arena se mezcla con algo más..."
+
+Tormenta de arena. Oscuridad.
+[TRANSICIÓN A BIOMA 3]
+
+🌲 OLEADAS 21-30: "Bosque de las Raíces Antiguas"
+Bioma: Forest Ground + árboles densos (oak, pine) + arbustos
+Narrativa Pre-Oleada 30:
+Pantalla verde oscuro. Sonido de hojas crujiendo
+Texto:
+
+"El bosque te ofrece cobertura. Pero también la ofrece a ellos."
+"Los árboles son viejos. Más viejos que el apocalipsis. Testigos silenciosos."
+"Entre las raíces, encuentras huesos. No todos son recientes."
+"Los zombis se mueven entre los troncos como sombras. La horda conoce estos senderos."
+"Más adelante, el suelo cruje diferente. Se vuelve blando. Peligroso."
+
+Crujido de ramas. Niebla verde.
+[TRANSICIÓN A BIOMA 4]
+
+🌿 OLEADAS 31-40: "Pantano de los Ahogados"
+Bioma: Mud + Water (zonas lentas) + árboles secos + arbustos dispersos
+Narrativa Pre-Oleada 40:
+Pantalla marrón verdosa. Sonido de burbujeo
+Texto:
+
+"El barro te chupa las piernas. Cada paso es una lucha."
+"El agua estancada refleja el cielo gris. Caminar por ella te hace vulnerable."
+"Los árboles aquí están muertos, pero siguen en pie. Como tú."
+"Los zombis emergen del agua. Lentos, pero implacables."
+"Debes salir de aquí. El aire es tóxico. Tu cuerpo lo siente."
+"Hacia el horizonte, ves montañas grises. Piedra sólida. Finalmente."
+
+Chapoteo. Oscuridad pantanosa.
+[TRANSICIÓN A BIOMA 5]
+
+⛰️ OLEADAS 41-50: "Tierras de Roca Quebrada"
+Bioma: Rock + Stone + rocas grandes dispersas
+Narrativa Pre-Oleada 50:
+Pantalla gris. Sonido de piedras cayendo
+Texto:
+
+"La tierra se vuelve dura. Piedra bajo tus pies. Cada paso resuena."
+"Las rocas son como monumentos naturales a un mundo que ya no existe."
+"Aquí no hay árboles. No hay vida. Solo roca y muerte."
+"Los zombis golpean las piedras al perseguirte. El sonido es ensordecedor."
+"Subes más alto. La roca se vuelve más oscura. Más caliente."
+"Algo brilla al este. Rojo. Peligroso."
+
+Eco de montaña. Fade to black.
+[TRANSICIÓN A BIOMA 6]
+
+🌋 OLEADAS 51-60: "Campos de Fuego Eterno"
+Bioma: Rock oscuro + Lava (daño extremo) + rocas incandescentes
+Narrativa Pre-Oleada 60:
+Pantalla roja-naranja. Sonido de magma burbujeante
+Texto:
+
+"El calor es insoportable. Ríos de lava cortan el camino."
+"Pisarla es morir. Pero los zombis no lo saben. O no les importa."
+"Arden mientras te persiguen. Sus gruñidos se mezclan con el crepitar del fuego."
+"Este lugar no debería existir. Pero aquí estás."
+"El calor empieza a ceder. Al norte, ves algo imposible..."
+"Nieve."
+
+Calor intenso. Distorsión visual por el aire caliente.
+[TRANSICIÓN A BIOMA 7]
+
+❄️ OLEADAS 61-70: "Tundra del Silencio Blanco"
+Bioma: Snow + Ice (resbaladizo) + pinos + rocas nevadas
+Narrativa Pre-Oleada 70:
+Pantalla blanca. Sonido de viento helado
+Texto:
+
+"El frío te recuerda que aún sientes. El dolor es prueba de vida."
+"La nieve cubre todo. Cada huella tuya es seguida por cientos de ellas."
+"El hielo es traicionero. Resbalas. Caes. Te levantas. Repites."
+"Los pinos están congelados, como fotografías de un invierno eterno."
+"Los zombis congelados siguen moviéndose. El frío no los detiene."
+"Más allá de las nieves, el blanco se mezcla con verde pálido."
+
+Ventisca. Blanco total.
+[TRANSICIÓN A BIOMA 8]
+
+🌊 OLEADAS 71-80: "Costa de los Náufragos"
+Bioma: Sand costero + Water (zonas profundas, muy lentas) + rocas en el agua
+Narrativa Pre-Oleada 80:
+Pantalla azul-gris. Sonido de olas
+Texto:
+
+"El mar. Solía significar libertad. Ahora solo significa límite."
+"El agua te hace lento. Cruzarla es exponerte. Pero a veces no hay opción."
+"La arena mojada guarda huellas de los que vinieron antes. Nadie regresó."
+"Los zombis caminan bajo el agua. Emergen como pesadillas ahogadas."
+"Las rocas en el mar son islas temporales. Pequeños respiros."
+"Tierra adentro, el terreno cambia una vez más. Algo... extraño."
+
+Sonido de olas rompiéndose. Oscuridad azul.
+[TRANSICIÓN A BIOMA 9]
+
+🌑 OLEADAS 81-90: "El Umbral Entre Mundos"
+Bioma: Mezcla caótica (Rock + Grass + Mud + Water + Ice) - Bioma fragmentado
+Narrativa Pre-Oleada 90:
+Pantalla en blanco y negro. Sonido distorsionado
+Texto:
+
+"Este lugar no tiene sentido. La tierra cambia cada pocos metros."
+"Hierba. Roca. Hielo. Barro. Agua. Todo mezclado sin orden."
+"Es como si la naturaleza misma estuviera rota."
+"Los zombis aquí son diferentes. Más rápidos. Más feroces."
+"¿Es este lugar real? ¿O llevas tanto tiempo luchando que tu mente se fracturó?"
+"No importa. Adelante hay algo... un último lugar."
+"El epicentro."
+
+Glitch visual. Distorsión.
+[TRANSICIÓN A BIOMA 10]
+
+⚰️ OLEADAS 91-100: "La Tierra de Nadie - Epicentro"
+Bioma: Rock oscuro + Lava activa + Water estancada + terreno muerto (mix peligroso)
+Narrativa Pre-Oleada 100:
+Pantalla completamente negra. Solo texto blanco
+Texto:
+
+"Llegaste."
+"Donde todo comenzó. Donde todo terminó."
+"No hay árboles. No hay vida. Solo piedra, fuego y agua muerta."
+"Este es el corazón del apocalipsis."
+"Esperabas respuestas. Esperabas un final."
+"Pero solo encuentras más tierra. Más horda. Más lucha."
+"La lava fluye. El agua te ralentiza. La piedra es tu único aliado."
+"Y ellos siguen viniendo."
+"Siempre vienen."
+
+Pausa larga. Sonido de magma y viento
+
+🌌 OLEADA 100: "La Aceptación"
+Cinemática Final:
+Pantalla en negro. El personaje está de pie en medio del epicentro
+Narrador (voz del protagonista por primera vez):
+
+"Crucé praderas verdes."
+"Sobreviví desiertos sin agua."
+"Luché en bosques oscuros y pantanos que me tragaban."
+"Escalé montañas de roca."
+"Caminé sobre fuego y hielo."
+"Vadee aguas que casi me ahogan."
+[Silencio]
+"¿Para qué?"
+"No hay cura al final de este camino."
+"No hay refugio esperando."
+"Solo más tierra. Y más muertos que no mueren."
+[Sonido de horda acercándose]
+"Pero sigo aquí."
+"Porque detenerme es aceptar que ellos ganaron."
+"Y yo... yo me niego."
+[Recarga el arma]
+"Esta tierra rota es mi hogar ahora."
+"La lava quema. El agua ahoga. La piedra resiste."
+"Y yo también."
+"Ven, entonces. Toda la horda."
+"Llevo 100 oleadas de pie."
+"Hagamos que sean 1000."
+
+Fade a blanco
+Texto final:
+
+"LA TIERRA NO DESCANSA. TÚ TAMPOCO."
+"NO HAY FINAL. SOLO RESISTENCIA."
+"¿CUÁNTO MÁS PUEDES SOPORTAR?"
+
+Música épica pero melancólica. El juego se reanuda en modo infinito.
+
+♾️ MODO INFINITO (Oleada 101+)
+Bioma permanente: Epicentro (Rock + Lava + Water estancada)
+Mensajes Aleatorios Cada 10 Oleadas:
+Oleada 110:
+
+"La lava sigue fluyendo. Tú sigues luchando."
+
+Oleada 120:
+
+"El agua te ralentiza. Pero no te detiene."
+
+Oleada 150:
+
+"Has dominado este infierno. Ahora es tu territorio."
+
+Oleada 200:
+
+"La tierra es testigo de tu terquedad."
+
+Oleada 500:
+
+"Eres parte del paisaje ahora. Eterno como la roca."
+
+Oleada 1000:
+
+"El apocalipsis no te venció. Tú venciste al apocalipsis."
+
+
+📊 Tabla de Biomas y Mecánicas
+OleadasBioma PrincipalTerrenosObstáculos NaturalesDesafío1-10PraderasGrassÁrboles, arbustosBásico11-20DesiertoSandCactus, rocasVisibilidad alta, sin cobertura21-30BosqueForest GroundÁrboles densos, arbustosEmboscadas, cobertura densa31-40PantanoMud + WaterAgua (lento), árboles secosMovilidad reducida41-50MontañasRock + StoneRocas grandesTerreno irregular51-60VolcánicoRock + LavaLava (daño extremo)Esquivar constantemente61-70TundraSnow + IceHielo (resbaladizo), pinosControl de movimiento71-80CostaSand + WaterAgua profunda (muy lento)Zonas de peligro81-90UmbralMix caóticoTodos mezcladosAdaptación constante91-100EpicentroRock + Lava + WaterTodo peligrosoSupervivencia extrema101+EpicentroRock + Lava + WaterPermanenteInfinito
+
+🎬 Sistema de Transiciones (Técnico)
+Cada Oleada Múltiplo de 10:
+
+Fade out completo (2 seg) - Pantalla negra
+Música de transición acorde al bioma siguiente
+Texto narrativo (8-10 seg de lectura)
+Cambio de bioma en background (invisible)
+Efecto de "ajuste de color" según nuevo terreno
+Fade in con efecto de despertar (2 seg)
+Primera oleada del nuevo bioma comienza
+
+Duración total: ~15-20 segundos
+
+💡 Detalles Técnicos Importantes
+Mecánicas de Terreno en la Narrativa:
+
+Water: Se menciona como "agua que te ralentiza", "vadear es peligroso"
+Lava: "Ríos de fuego", "pisarla es morir", "zombis ardiendo"
+Ice: "Terreno resbaladizo", "control limitado"
+Mud: "Te hunde", "cada paso es lento"
+Sand/Rock/Snow/Grass/Forest Ground: Terrenos normales con descripciones atmosféricas
+
+Objetos Naturales Mencionados:
+
+Árboles (oak, pine, dead trees)
+Arbustos (bushes)
+Cactus
+Rocas (pequeñas y grandes)
+Flores (solo decorativas en praderas)

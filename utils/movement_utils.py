@@ -1,6 +1,4 @@
-# utils/movement_utils.py
 import pygame
-import math
 
 class MovementUtils:
 

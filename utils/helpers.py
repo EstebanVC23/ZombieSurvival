@@ -1,4 +1,3 @@
-# utils/helpers.py
 import pygame
 import os
 from settings import ASSETS_IMAGES

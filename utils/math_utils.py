@@ -1,4 +1,3 @@
-# utils/math_utils.py
 import pygame
 import math
 

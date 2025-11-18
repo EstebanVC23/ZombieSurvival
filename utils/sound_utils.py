@@ -1,4 +1,3 @@
-# utils/sound_utils.py
 import pygame
 from utils.helpers import load_sound
 
