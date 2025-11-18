@@ -1,6 +1,10 @@
 # launcher.py
 '''Falta por:
 - Dividir las clases que tienen muchas clases en un archivo propio
+- El upgrade de vida extra aumenta la vida máxima pero tambien la actual
+- crear el menu de ajustes (settings)
+- crear el sistema de scores altos y que se guarden en un archivo
+- adaptar la historia/narrativa del juego para que aparezca en el juego(esta en data/narrative.txt)
 - Ajustar daños y vida de zombies (settings.py)
 - Ajustar puntos por matar zombies (settings.py)
 - Generar mundos por cada narrativa en el juego(niveles)
