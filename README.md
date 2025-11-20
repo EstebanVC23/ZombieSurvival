@@ -17,11 +17,11 @@
 
 ## 📖 Descripción
 
-**Zombie Survival: Endless Apocalypse** es un juego 2D de supervivencia desarrollado en **Python** utilizando **Pygame**. El jugador debe resistir oleadas infinitas de zombis en un mundo generado proceduralmente, donde cada partida ofrece un entorno único y desafiante.
+**Zombie Survival: Endless Apocalypse** es un juego 2D de supervivencia desarrollado en **Python** utilizando **Pygame**. El jugador debe resistir oleadas infinitas de zombis en diferentes mapas cada 10 olas hasta la 100, a partir de la ronda 100, el mapa no cambia, donde cada partida ofrece un entorno único y desafiante.
 
 ### 🎯 Concepto Principal
 - Supervivencia contra oleadas infinitas de zombis
-- Mundo generado proceduralmente con biomas diversos
+- Mundo que cambia cada 10 olas hasta la 100 con biomas diversos
 - Dificultad progresiva y enemigos variados
 - Estética pixel art retro con mecánicas modernas
 
@@ -32,7 +32,7 @@
 ### ⚔️ Sistema de Combate
 - **Disparo dinámico:** El jugador dispara hacia el centro de una mira personalizada
 - **Colisiones realistas:** Sistema de detección preciso entre balas, jugador y enemigos
-- **Múltiples armas:** Sistema modular preparado para diferentes tipos de armamento
+- **Múltiples armas:** Sistema modular de rareza y niveles diferentes de zombies
 - **Feedback visual:** Efectos al impactar y eliminar enemigos
 
 ### 🧟‍♂️ Sistema de Enemigos
@@ -75,8 +75,6 @@
 El sistema de generación procedural está siendo implementado para crear mundos únicos en cada partida.
 
 #### 🔧 Tecnologías Implementadas
-- **Noise Library:** Utilización de ruido Perlin/Simplex para terrenos naturales
-- **Sistema de semillas:** Cada partida genera un seed único
 - **Texturas preparadas:** Assets completos para todos los biomas planificados
 
 #### 🌍 Biomas Planificados
@@ -126,17 +124,6 @@ El sistema de generación procedural está siendo implementado para crear mundos
 </tr>
 </table>
 
-#### 🎲 Sistema de Generación
-```python
-# Características del sistema procedural
-✅ Noise Perlin/Simplex implementado
-✅ Texturas de biomas preparadas
-✅ Sistema de tiles modular
-🚧 Generación de chunks dinámica
-🚧 Transiciones suaves entre biomas
-🚧 Decoraciones ambientales por bioma
-🔜 Generación infinita del mundo
-🔜 Sistema de carga/descarga de chunks
 ```
 
 #### 🌳 Decoraciones Ambientales Planificadas
@@ -185,14 +172,16 @@ ZombieSurvival/
 │       └── health_bar.png
 │
 ├── core/
+│   ├── game_component/
 │   ├── camera.py
 │   ├── impact.py
 │   ├── upgrade.py
-│   ├── world.py              
-│   ├── collision.py           ← (nuevo opcional)
+│   ├── world.py
 │   └── state_manager.py
 │
 ├── entities/
+│   ├── player_components/
+│   ├── zombie_components/
 │   ├── player.py
 │   ├── weapon.py
 │   ├── bullet.py
@@ -200,6 +189,10 @@ ZombieSurvival/
 │   └── spawner.py 
 │
 ├── ui/
+│   ├── buttons.py
+│   ├── map.py
+│   ├── lose_menu.py
+│   ├── player_card.py
 │   ├── hud.py
 │   ├── pause_menu.py
 │   ├── main_menu.py
@@ -207,6 +200,10 @@ ZombieSurvival/
 │   └── buttons.py 
 │
 ├── utils/
+│   ├── image_utils.py
+│   ├── sound_utils.py
+│   ├── movement_utils.py
+│   ├── math_utils.py
 │   └── helpers.py
 │
 └── data/
@@ -230,6 +227,14 @@ ZombieSurvival/
 <td><kbd>Clic Izquierdo</kbd></td>
 </tr>
 <tr>
+<td><b>Stats</b></td>
+<td><kbd>E</kbd></td>
+</tr>
+<tr>
+<td><b>Recargar</b></td>
+<td><kbd>R</kbd></td>
+</tr>
+<tr>
 <td><b>Pausar</b></td>
 <td><kbd>ESC</kbd></td>
 </tr>
@@ -250,11 +255,11 @@ ZombieSurvival/
 ### Pasos de Instalación
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/tu_usuario/ZombieSurvival.git
+git clone https://github.com/EstebanVC23/ZombieSurvival.git
 cd ZombieSurvival
 
 # 2. Instalar dependencias
-pip install pygame noise
+pip install pygame numpy
 
 # 3. Ejecutar el juego
 python launcher.py
@@ -265,7 +270,6 @@ python launcher.py
 | Librería | Versión | Propósito |
 |----------|---------|-----------|
 | **pygame** | 2.6+ | Motor de juego 2D |
-| **noise** | 1.2+ | Generación procedural con Perlin noise |
 | **Pillow** | (Opcional) | Manipulación avanzada de imágenes |
 
 ---
@@ -285,8 +289,7 @@ python launcher.py
 - [x] Texturas de biomas preparadas
 
 ### 🚧 En Desarrollo
-- [ ] Generación procedural de mapas
-- [ ] Sistema de chunks dinámicos
+- [ ] Generación de mapas
 - [ ] Transiciones entre biomas
 - [ ] Decoraciones ambientales
 - [ ] Mini-mapa
