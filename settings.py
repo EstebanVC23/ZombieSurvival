@@ -262,3 +262,44 @@ ZOMBIE_SOUND_MAX_INTERVAL = 4.0
 
 ASSETS_IMAGES = "assets/images"
 ASSETS_SOUNDS = "assets/sounds"
+
+# -----------------------------
+# Mapa de terreno / objetos
+# -----------------------------
+TERRAIN_DIR = "terrain"
+TERRAIN_TILE_SIZE = 100
+TERRAIN_DEFAULT_LETTER = "G"
+
+# El mapa interpreta cada letra como un tile u objeto
+# mapa letra -> nombre de fichero (sin extension) (usa solo terrenos)
+TERRAIN_LETTER_MAP = {
+    "D": "dirt",
+    "F": "forest_ground",
+    "G": "grass",
+    "I": "ice",
+    "M": "mud",
+    "R": "rock",
+    "S": "sand",
+    "N": "snow",
+    "W": "water",
+    "L": "lava",
+}
+
+# ===================================================
+# TERRENOS PERMITIDOS PARA GENERAR EL MUNDO
+# ===================================================
+# Si está en None → se generan TODOS los biomas de mapa por defecto.
+# Si contiene una lista → solo se generan esos biomas coherentes.
+# Tamaño del tile
+TILE_SIZE = 100
+
+# Ejemplos:
+# WORLD_ALLOWED_TERRAINS = ["G"]                     # solo grass
+# WORLD_ALLOWED_TERRAINS = ["G", "F", "M"]           # grass, forest, mud
+# WORLD_ALLOWED_TERRAINS = ["W", "S"]                # water + sand
+# WORLD_ALLOWED_TERRAINS = ["N", "I"]                # nieve + hielo
+
+# Radio de visión del jugador sobre el mapa (en tiles)
+MAP_TILE_VISION_RADIUS = 8
+
+

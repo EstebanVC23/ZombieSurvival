@@ -1,5 +1,8 @@
 import pygame
 import sys
+import math
+import traceback
+
 from settings import *
 from entities.player import Player
 from entities.spawner import Spawner
@@ -9,10 +12,13 @@ from ui.pause_menu import PauseMenu
 from ui.player_card import UIManager
 from utils.helpers import load_font, load_cursor, load_music
 from ui.loading_screen import LoadingScreen
+
 from core.game_component.drawer import Drawer
 from core.game_component.event_handler import EventHandler
 from core.game_component.updater import Updater
-import traceback
+
+from core.map_loader import load_map_file
+from core.terrain import TileMap
 
 
 class Game:
@@ -75,21 +81,47 @@ class Game:
 
     # ============================================================
     def initialize_game_state(self):
-        """Inicializa o reinicia todos los componentes del juego."""
         print("[DEBUG] initialize_game_state() llamado")
 
+        # Ruta del archivo del mapa — SIEMPRE cargado desde txt
+        map_path = "assets/maps/map01.txt"
+
+        # Carga directa SIN generación procedural
+        mapa, cols, rows = load_map_file(
+            map_path,
+            WORLD_WIDTH,
+            WORLD_HEIGHT
+        )
+
+        print(f"[DEBUG] Mapa cargado desde archivo: {cols}x{rows} tiles")
+
+        # Crear tilemap
+        self.tilemap = TileMap(
+            mapa,
+            tile_size=TERRAIN_TILE_SIZE
+        )
+
+        # === 3) Mantener dimensiones del mundo ===
+        self.world_width = WORLD_WIDTH
+        self.world_height = WORLD_HEIGHT
+
+        # === 4) Inicializar entidades ===
         self.player = Player((self.world_width / 2, self.world_height / 2))
         self.zombies = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.upgrades = pygame.sprite.Group()
         self.effects = pygame.sprite.Group()
+
+        # Cámara y UI
         self.camera = Camera(self.world_width, self.world_height)
         self.hud = HUD(self.font)
         self.pause_menu = PauseMenu(self.screen, self.screen_width, self.screen_height)
         self.ui_manager = UIManager(self.player)
+
+        # Spawner
         self.spawner = Spawner(self)
 
-        print("[DEBUG] Estado del juego listo (player, spawner, grupos...)")
+        print("[DEBUG] Estado del juego listo (player, tilemap, spawner, grupos...)")
 
     # ============================================================
     # Loop principal
@@ -106,7 +138,6 @@ class Game:
                 print("[ERROR] Excepción en event_handler.handle_events()")
                 traceback.print_exc()
 
-            # Volver al main menu
             if self.return_to_main_menu:
                 print("[DEBUG] return_to_main_menu activado, limpiando zombies y saliendo al menú")
                 for z in self.zombies:
@@ -117,7 +148,7 @@ class Game:
                         traceback.print_exc()
                         print("[ERROR] No se pudo detener sonido de zombie")
                 self.zombies.empty()
-                return  
+                return
 
             if not self.paused:
                 try:

@@ -7,8 +7,17 @@ class Drawer:
         self.game = game
 
     def draw(self):
-        # Fondo
+        # Fondo base
         self.game.screen.fill((30, 30, 30))
+
+        # Dibujar tilemap (si existe)
+        if hasattr(self.game, "tilemap") and self.game.tilemap:
+            try:
+                self.game.tilemap.draw(self.game.screen, self.game.camera)
+            except Exception:
+                import traceback
+                print("[ERROR] Excepción dibujando tilemap")
+                traceback.print_exc()
 
         # Marco mundo
         pygame.draw.rect(
