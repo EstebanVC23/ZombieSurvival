@@ -285,11 +285,6 @@ TERRAIN_LETTER_MAP = {
     "L": "lava",
 }
 
-# ===================================================
-# TERRENOS PERMITIDOS PARA GENERAR EL MUNDO
-# ===================================================
-# Si está en None → se generan TODOS los biomas de mapa por defecto.
-# Si contiene una lista → solo se generan esos biomas coherentes.
 # Tamaño del tile
 TILE_SIZE = 100
 
@@ -301,5 +296,62 @@ TILE_SIZE = 100
 
 # Radio de visión del jugador sobre el mapa (en tiles)
 MAP_TILE_VISION_RADIUS = 8
+
+# ================================================================
+# Objects / decorations
+# ================================================================
+OBJECT_DIR = "objects"
+OBJECT_TILE_SIZE = 100  # opcionalmente igual que TERRAIN_TILE_SIZE
+
+# Mapa de qué objeto aparece sobre qué terreno
+TERRAIN_TO_OBJECT = {
+    "G": "bush",          # grass -> bush
+    "S": "cactus",        # sand -> cactus
+    "F": "tree_oak",      # forest_ground -> tree_oak
+    "D": "rock_small",    # dirt -> rock_small
+    "M": "flower",        # mud -> flower
+    "N": "tree_pine",     # snow -> tree_pine
+    "I": "tree_dead",     # ice -> tree_dead
+}
+
+# tamaño específico de cada objeto (width, height)
+OBJECT_SIZES = {
+    "bush": (60, 40),        # un arbusto ancho y bajo
+    "flower": (20, 20),      # flor pequeña
+    "tree_oak": (80, 180),   # árbol grande pero no demasiado ancho
+    "cactus": (40, 100),     # cactus alto y delgado
+    "rock_small": (50, 30),  # roca pequeña y baja
+    "tree_dead": (70, 150),  # árbol muerto, algo más alto que ancho
+    "tree_pine": (60, 160),  # pino alto y delgado
+}
+
+
+# probabilidad de aparecer (solo usada para selección lógica)
+OBJECT_SPAWN_CHANCE = {
+    "bush": 0.3,
+    "flower": 0.2,
+    "tree_oak": 0.2,
+    "cactus": 0.4,
+    "rock_small": 0.3,
+    "tree_dead": 0.1,
+    "tree_pine": 0.2,
+}
+
+# mapeo de terreno a posibles objetos
+TERRAIN_TO_OBJECT = {
+    "G": ["bush", "flower", "tree_oak"],
+    "S": ["cactus"],
+    "F": ["tree_oak", "flower"],
+    "D": ["rock_small"],
+    "M": ["flower"],
+    "N": ["tree_pine"],
+    "I": ["tree_dead"],
+}
+
+# Probabilidad de que un tile tenga un objeto decorativo
+TILE_OBJECT_PROBABILITY = 0.05  # 25%
+
+
+
 
 
