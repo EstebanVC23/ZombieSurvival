@@ -11,10 +11,9 @@ from core.game import Game
 from ui.main_menu_components.menu_assets import MenuAssets
 from ui.main_menu_components.menu_ui import MenuUI
 from ui.main_menu_components.player_name_input import PlayerNameOverlay
+from ui.main_menu_components.top10display import Top10Display
 
-from colors import (DARK_GREY,
-    MENU_GLOW
-)
+from colors import DARK_GREY, MENU_GLOW
 
 pygame.init()
 
@@ -28,6 +27,7 @@ class MainMenu:
         self.player_name_overlay = None
         self.waiting_name = False
         self.player_name = None  # Nombre ingresado por el usuario
+        self.top10_overlay = Top10Display(self.assets.screen)  # Pre-inicializado
 
     def main_menu(self):
         if not pygame.mixer.get_init():
@@ -47,12 +47,13 @@ class MainMenu:
 
                 # ------------------ CLICK EN BOTONES DEL MENU ------------------
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if not self.waiting_name:
+                    if not self.waiting_name and not self.top10_overlay.active:
                         clicked = self.ui.menu_buttons.handle_click(mouse_pos)
                         if clicked == "START GAME":
-                            # Abrir overlay para ingresar nombre
                             self.player_name_overlay = PlayerNameOverlay(screen)
                             self.waiting_name = True
+                        elif clicked == "HIGH SCORES":
+                            self.top10_overlay.show()
                         elif clicked == "EXIT":
                             pygame.quit()
                             sys.exit()
@@ -63,13 +64,16 @@ class MainMenu:
                     if result == "CANCEL":
                         self.waiting_name = False
                         self.player_name_overlay = None
-                    elif result:  # Se ingresó un nombre
+                    elif result:
                         self.player_name = result
-                        # Pasar el nombre al Game
                         game = Game(player_name=self.player_name)
                         game.load_resources()
                         game.run()
                         running = False
+
+                # ------------------ EVENTOS DEL TOP10 ------------------
+                if self.top10_overlay.active:
+                    self.top10_overlay.handle_event(event)
 
             # ------------------ DIBUJADO ------------------
             screen.blit(self.assets.background, (0, 0))
@@ -85,9 +89,11 @@ class MainMenu:
                 cx = self.assets.SCREEN_WIDTH // 2
                 pygame.draw.line(screen, MENU_GLOW, (cx - glow_len, y), (cx + glow_len, y), 3)
 
-            # Dibujar overlay si está activo
+            # Dibujar overlays si están activos
             if self.waiting_name and self.player_name_overlay:
                 self.player_name_overlay.draw()
+            if self.top10_overlay.active:
+                self.top10_overlay.draw()
 
             # Cursor personalizado
             if self.assets.cursor_menu:

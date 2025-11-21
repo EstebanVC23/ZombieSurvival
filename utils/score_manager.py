@@ -6,7 +6,7 @@ class ScoreManager:
     """Gestor de puntuaciones con ranking y desempate por olas."""
 
     FILE_PATH = "data/scores.json"
-    MAX_ENTRIES = 10  # Mantener solo las 10 mejores puntuaciones
+    # REMOVIDO: MAX_ENTRIES - Ahora guardamos TODAS las puntuaciones
 
     def __init__(self):
         os.makedirs(os.path.dirname(self.FILE_PATH), exist_ok=True)
@@ -44,33 +44,30 @@ class ScoreManager:
         self.scores.append(entry)
         # Ordenar primero por score desc, luego por wave desc
         self.scores.sort(key=lambda x: (-x["score"], -x["wave"]))
-        # Limitar al máximo de entries
-        self.scores = self.scores[:self.MAX_ENTRIES]
+        # YA NO SE LIMITA - Guardamos todas las puntuaciones
         self._update_positions()
         self._save_scores()
 
     def _update_positions(self):
-        """Calcula la posición actual de cada jugador, compartiendo posiciones si score y wave iguales."""
         if not self.scores:
             return
 
         current_position = 1
-        last_score = None
-        last_wave = None
-        shared_count = 0
+        prev_score = None
+        prev_wave = None
 
         for i, entry in enumerate(self.scores):
-            if last_score is not None and entry["score"] == last_score and entry["wave"] == last_wave:
-                # Mismo score y wave → comparte posición
-                entry["position"] = current_position
-                shared_count += 1
+            if i == 0:
+                entry["position"] = 1
             else:
-                # Nuevo ranking → sumar shared_count
-                current_position += shared_count
-                entry["position"] = current_position
-                shared_count = 1  # este entry cuenta como 1
-                last_score = entry["score"]
-                last_wave = entry["wave"]
+                if entry["score"] == prev_score and entry["wave"] == prev_wave:
+                    entry["position"] = current_position  # comparte
+                else:
+                    current_position = i + 1  # nueva posición
+                    entry["position"] = current_position
+
+            prev_score = entry["score"]
+            prev_wave = entry["wave"]
 
     def _save_scores(self):
         try:
