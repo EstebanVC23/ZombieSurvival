@@ -8,7 +8,7 @@ from ui.main_menu_components.menu_visual_fx import MenuVisualFX
 class MenuUI:
     def __init__(self, assets: MenuAssets):
         self.assets = assets
-        menu_items = ["START GAME", "HIGH SCORES", "SETTINGS", "EXIT"]
+        menu_items = ["START GAME", "HIGH SCORES", "HELP", "EXIT"]
         menu_positions = [
             (assets.SCREEN_WIDTH//2, 400),
             (assets.SCREEN_WIDTH//2, 460),

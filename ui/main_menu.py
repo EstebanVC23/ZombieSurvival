@@ -12,6 +12,7 @@ from ui.main_menu_components.menu_assets import MenuAssets
 from ui.main_menu_components.menu_ui import MenuUI
 from ui.main_menu_components.player_name_input import PlayerNameOverlay
 from ui.main_menu_components.top10display import Top10Display
+from ui.main_menu_components.help_overlay import HelpOverlay
 
 from colors import DARK_GREY, MENU_GLOW
 
@@ -26,8 +27,9 @@ class MainMenu:
         self.ui = MenuUI(self.assets)
         self.player_name_overlay = None
         self.waiting_name = False
-        self.player_name = None  # Nombre ingresado por el usuario
-        self.top10_overlay = Top10Display(self.assets.screen)  # Pre-inicializado
+        self.player_name = None
+        self.top10_overlay = Top10Display(self.assets.screen)
+        self.help_overlay = HelpOverlay(self.assets.screen)  # Nuevo overlay de ayuda
 
     def main_menu(self):
         if not pygame.mixer.get_init():
@@ -47,13 +49,15 @@ class MainMenu:
 
                 # ------------------ CLICK EN BOTONES DEL MENU ------------------
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    if not self.waiting_name and not self.top10_overlay.active:
+                    if not self.waiting_name and not self.top10_overlay.active and not self.help_overlay.active:
                         clicked = self.ui.menu_buttons.handle_click(mouse_pos)
                         if clicked == "START GAME":
                             self.player_name_overlay = PlayerNameOverlay(screen)
                             self.waiting_name = True
                         elif clicked == "HIGH SCORES":
                             self.top10_overlay.show()
+                        elif clicked == "HELP":
+                            self.help_overlay.show()
                         elif clicked == "EXIT":
                             pygame.quit()
                             sys.exit()
@@ -71,9 +75,11 @@ class MainMenu:
                         game.run()
                         running = False
 
-                # ------------------ EVENTOS DEL TOP10 ------------------
                 if self.top10_overlay.active:
                     self.top10_overlay.handle_event(event)
+
+                if self.help_overlay.active:
+                    self.help_overlay.handle_event(event)
 
             # ------------------ DIBUJADO ------------------
             screen.blit(self.assets.background, (0, 0))
@@ -94,6 +100,8 @@ class MainMenu:
                 self.player_name_overlay.draw()
             if self.top10_overlay.active:
                 self.top10_overlay.draw()
+            if self.help_overlay.active:
+                self.help_overlay.draw()
 
             # Cursor personalizado
             if self.assets.cursor_menu:
