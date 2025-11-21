@@ -26,13 +26,13 @@ WORLD_HEIGHT = 4000
 # ===================================================
 
 # --- Movimiento ---
-PLAYER_SPEED = 500  # Velocidad de movimiento en píxeles/segundo
+PLAYER_SPEED = 1000  # Velocidad de movimiento en píxeles/segundo
 
 # --- Apariencia ---
 PLAYER_SIZE = 100  # Tamaño del sprite del jugador
 
 # --- Salud y Defensa ---
-PLAYER_BASE_HEALTH = 100      # Salud inicial del jugador
+PLAYER_BASE_HEALTH = 1      # Salud inicial del jugador
 PLAYER_BASE_ARMOR = 0         # Armadura inicial
 PLAYER_MAX_ARMOR = 100        # Capacidad máxima de armadura
 

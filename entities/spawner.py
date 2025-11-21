@@ -25,6 +25,7 @@ class Spawner:
     def __init__(self, game):
         self.game = game
         self.current_wave = 0
+        self.max_wave_completed = 0
 
         # Cooldown entre olas
         self.time_between_waves = SPAWNER_TIME_BETWEEN_WAVES
@@ -147,6 +148,8 @@ class Spawner:
                     print("[Spawner] Ola completada!")
                     self.in_wave = False
                     self.wave_cooldown = self.time_between_waves
+                    self.max_wave_completed = self.current_wave  # guardamos la ola alcanzada
+
 
             else:
                 # Cooldown entre olas

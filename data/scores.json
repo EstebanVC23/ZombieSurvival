@@ -1,0 +1,30 @@
+[
+    {
+        "player": "ess",
+        "score": 20,
+        "wave": 0,
+        "date": "2025-11-21 00:31:55",
+        "position": 1
+    },
+    {
+        "player": "estevan",
+        "score": 0,
+        "wave": 0,
+        "date": "2025-11-21 00:30:34",
+        "position": 2
+    },
+    {
+        "player": "es",
+        "score": 0,
+        "wave": 0,
+        "date": "2025-11-21 00:31:24",
+        "position": 2
+    },
+    {
+        "player": "esteban",
+        "score": 0,
+        "wave": 0,
+        "date": "2025-11-21 00:35:47",
+        "position": 2
+    }
+]

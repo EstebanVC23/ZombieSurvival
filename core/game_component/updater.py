@@ -16,7 +16,21 @@ class Updater:
         if self.game.player.health <= 0 and self.game.lose_menu is None:
             self.game.paused = True
             self.game.current_cursor = self.game.cursor_menu
-            self.game.lose_menu = LoseMenu(self.game.screen, self.game.screen_width, self.game.screen_height)
+
+            # PASAR DATOS AL MENÚ DE DERROTA
+            player_name = self.game.player.player_name  # nombre del jugador
+            player_score = self.game.player.score       # score acumulado
+            wave_reached = self.game.spawner.max_wave_completed  # olas completadas
+
+            self.game.lose_menu = LoseMenu(
+                self.game.screen,
+                self.game.screen_width,
+                self.game.screen_height,
+                player_name=player_name,
+                player_score=player_score,
+                wave_reached=wave_reached
+            )
+
 
         # Entidades
         for group in [self.game.bullets, self.game.zombies, self.game.upgrades, self.game.effects]:

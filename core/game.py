@@ -24,7 +24,9 @@ from core.terrain import TileMap
 class Game:
     """Clase principal del juego."""
 
-    def __init__(self):
+    def __init__(self, player_name="Player"):
+        self.player_name = player_name  # Guardar el nombre del jugador
+
         pygame.init()
         try:
             pygame.mixer.pre_init(44100, -16, 2, 512)
@@ -107,6 +109,8 @@ class Game:
 
         # === 4) Inicializar entidades ===
         self.player = Player((self.world_width / 2, self.world_height / 2))
+        self.player.name = self.player_name  # Asignar nombre ingresado
+
         self.zombies = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.upgrades = pygame.sprite.Group()
@@ -121,7 +125,7 @@ class Game:
         # Spawner
         self.spawner = Spawner(self)
 
-        print("[DEBUG] Estado del juego listo (player, tilemap, spawner, grupos...)")
+        print(f"[DEBUG] Estado del juego listo (player={self.player.name}, tilemap, spawner, grupos...)")
 
     # ============================================================
     # Loop principal

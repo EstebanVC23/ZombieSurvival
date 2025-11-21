@@ -1,19 +1,35 @@
-# ui/lose_menu.py
 import pygame
 import sys
 from utils.helpers import load_image_safe, load_music
 from ui.buttons import ButtonWithBackground, Buttons
+from utils.score_manager import ScoreManager
 
 class LoseMenu:
-    """Menú de derrota con botones funcionales y colores parametrizables."""
+    """Menú de derrota con botones y posición real en la tabla de puntuaciones."""
 
     def __init__(self, screen, screen_width, screen_height,
+                 player_name="Player", player_score=0, wave_reached=1,
                  text_color=(255,255,255), hover_text_color=(255,255,255),
                  color=(50,50,50), hover_color=(70,70,70), border_color=(200,200,200)):
+
         self.screen = screen
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self.player_name = player_name
 
+        # ScoreManager y guardado de puntuación
+        self.score_manager = ScoreManager()
+        self.score_manager.add_score(player_name, player_score, wave_reached)
+
+        # Determinar posición del jugador en la tabla
+        top_scores = self.score_manager.get_top_scores()
+        self.position = 1
+        for entry in top_scores:
+            if entry['player'] == player_name and entry['score'] == player_score and entry['wave'] == wave_reached:
+                self.position = entry['position']
+                break
+
+        # Fondo
         self.background = load_image_safe("menus/lose.png")
         if self.background:
             self.background = pygame.transform.scale(self.background, (screen_width, screen_height))
@@ -21,6 +37,7 @@ class LoseMenu:
             self.background = pygame.Surface((screen_width,screen_height))
             self.background.fill((10,10,10))
 
+        # Botones
         font_path = "assets/fonts/PressStart2P-Regular.ttf"
         button_texts = ["RESTART","MAIN MENU","EXIT"]
         button_width, button_height, spacing = 200,60,30
@@ -38,9 +55,18 @@ class LoseMenu:
         ]
         self.buttons = Buttons(screen, buttons_list)
 
+        # Fuente para mostrar posición
+        self.font = pygame.font.Font(font_path, 28)
+
     def draw(self):
         self.screen.blit(self.background, (0,0))
         self.buttons.draw()
+
+        # Mostrar la posición y el nombre del jugador
+        pos_text = f"{self.player_name.upper()} PLACED #{self.position}"
+        text_surf = self.font.render(pos_text, True, (255, 215, 0))  # dorado
+        text_rect = text_surf.get_rect(center=(self.screen_width//2, 150))
+        self.screen.blit(text_surf, text_rect)
 
     def handle_click(self, mouse_pos, game):
         clicked = self.buttons.handle_click(mouse_pos)
@@ -48,32 +74,19 @@ class LoseMenu:
             game.load_resources()
             game.reset_game()
         elif clicked == "MAIN MENU":
-            # Detener todos los sonidos de zombies
             if hasattr(game, "zombies"):
                 for z in game.zombies:
                     if hasattr(z, "sound") and z.sound:
                         z.sound.stop()
-
-            # Cerrar el lose menu
             game.lose_menu = None
             game.paused = False
-
-            # Cambiar resolución a la del main menu
             screen_width, screen_height = 700, 700
             game.screen = pygame.display.set_mode((screen_width, screen_height), pygame.NOFRAME)
             pygame.display.set_caption("Zombie Survival: Endless Apocalypse")
-
-            # Reiniciar el cursor al menú
             game.current_cursor = game.cursor_menu
-
-            # Marcar para volver al main menu
             game.return_to_main_menu = True
-
-            # Iniciar música del menú
             load_music("ambient.mp3", volume=0.6, loop=-1)
-
         elif clicked == "EXIT":
-            # Detener todos los sonidos de zombies antes de salir
             if hasattr(game, "zombies"):
                 for z in game.zombies:
                     if hasattr(z, "sound") and z.sound:

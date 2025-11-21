@@ -1,10 +1,6 @@
 import pygame
-
 from entities.weapon import Weapon
-from settings import (
-    PLAYER_SPEED, PLAYER_SIZE
-)
-
+from settings import PLAYER_SPEED, PLAYER_SIZE
 from entities.player_component.player_graphics import PlayerGraphics
 from entities.player_component.player_movement import PlayerMovement
 from entities.player_component.player_stats import PlayerStats
@@ -13,17 +9,17 @@ import traceback
 # ========================= Player Principal =========================
 class Player(pygame.sprite.Sprite):
 
-    def __init__(self, pos):
+    def __init__(self, pos, name="Player"):
         super().__init__()
 
-        print(f"[DEBUG][Player] Inicializando Player en posición {pos}")
+        self.name = name
+        print(f"[DEBUG][Player] Inicializando Player '{self.name}' en posición {pos}")
 
         self.stats = PlayerStats()
         self.movement = PlayerMovement(pos, PLAYER_SPEED)
         self.graphics = PlayerGraphics(PLAYER_SIZE)
         self.weapon = Weapon(owner=self)
 
-        # Inicializar rect
         self.graphics.rect.center = self.movement.pos
         self.rect = self.graphics.rect
 
@@ -40,7 +36,6 @@ class Player(pygame.sprite.Sprite):
 
     @health.setter
     def health(self, value):
-        print(f"[DEBUG][Player] health cambiado a {value}")
         self.stats.health = value
 
     @property
@@ -49,7 +44,6 @@ class Player(pygame.sprite.Sprite):
 
     @shield.setter
     def shield(self, value):
-        print(f"[DEBUG][Player] shield cambiado a {value}")
         self.stats.shield = value
 
     @property
@@ -74,16 +68,19 @@ class Player(pygame.sprite.Sprite):
 
     @speed.setter
     def speed(self, value):
-        print(f"[DEBUG][Player] speed cambiado a {value}")
         self.movement.speed = value
 
     @property
     def score(self):
         return self.stats.score
 
+    @property
+    def player_name(self):
+        return self.name
+
+
     @score.setter
     def score(self, value):
-        print(f"[DEBUG][Player] score cambiado a {value}")
         self.stats.score = value
 
     # ========================= Input y actualización =========================
@@ -115,21 +112,15 @@ class Player(pygame.sprite.Sprite):
 
     # ========================= Daño =========================
     def take_damage(self, amount):
-        print(f"[DEBUG][Player] Recibiendo daño: {amount}")
         self.stats.take_damage(amount)
 
     # ========================= Upgrades =========================
     def apply_upgrade(self, up):
-        print(f"[DEBUG][Player] Aplicando upgrade: {up}")
-
         try:
             extra_speed = self.stats.apply_upgrade(up, self.weapon)
             if extra_speed:
-                print(f"[DEBUG][Player] Upgrade dio extra_speed = {extra_speed}")
                 self.movement.speed += extra_speed
-
             self.graphics.rect.center = self.movement.pos
-
         except Exception:
             print("[ERROR][Player] Excepción en apply_upgrade()")
             traceback.print_exc()
