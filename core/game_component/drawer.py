@@ -10,13 +10,22 @@ class Drawer:
         # Fondo base
         self.game.screen.fill((30, 30, 30))
 
-        # Dibujar tilemap (si existe)
-        if hasattr(self.game, "tilemap") and self.game.tilemap:
+        # 🔹 Dibujar terreno
+        if hasattr(self.game, "terrain_map") and self.game.terrain_map:
             try:
-                self.game.tilemap.draw(self.game.screen, self.game.camera)
+                self.game.terrain_map.draw(self.game.screen, self.game.camera)
             except Exception:
                 import traceback
-                print("[ERROR] Excepción dibujando tilemap")
+                print("[ERROR] Excepción dibujando terrain_map")
+                traceback.print_exc()
+
+        # 🔹 Dibujar objetos del mapa
+        if hasattr(self.game, "object_map") and self.game.object_map:
+            try:
+                self.game.object_map.draw(self.game.screen, self.game.camera)
+            except Exception:
+                import traceback
+                print("[ERROR] Excepción dibujando object_map")
                 traceback.print_exc()
 
         # Marco mundo

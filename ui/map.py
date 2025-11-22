@@ -15,9 +15,13 @@ TERRAIN_COLOR = {
     "N": (230, 230, 250),   # snow
     "W": (60, 100, 180),    # water
     "L": (200, 60, 40),     # lava
+    # objetos/tiles extra (opcional)
+    "T": (40, 120, 40),     # tree tile
+    "B": (60, 160, 60),     # bush
     # fallback
     "":  (100, 100, 100),
 }
+
 
 # ========================= Datos del Minimap =========================
 class MiniMapData:
@@ -37,49 +41,113 @@ class MiniMapData:
         # grid explored (rows x cols) - False = no explorado, True = explorado
         self.explored = []
 
-        # mantener la correspondencia de world -> tiles
+        # mantener la correspondencia de world -> tiles (por defecto TILE_SIZE)
         self.tile_size_world = TILE_SIZE
 
         # cargar mapa si ya existe o será generado por game (opcional)
-        # Nota: El Game normalmente llamará a load_map_file en initialize_game_state.
-        # Aquí solo mantenemos referencias si el mapa ya está en game.tilemap.
-        if hasattr(game, "tilemap") and game.tilemap:
-            # tilemap.matrix puede ser lista de lists o list of strings
-            mat = getattr(game.tilemap, "matrix", None)
-            if mat:
-                # normalizar a lista de listas de strings (1 char each)
-                self.map_matrix = [list(r) if isinstance(r, str) else r for r in mat]
-                self.cols = game.tilemap.cols
-                self.rows = game.tilemap.rows
-                self._ensure_explored_size()
+        # usamos un loader robusto que detecta terrain_map, tilemap o object_map
+        self._load_map_from_game()
 
+    # --------------------------
+    def _load_map_from_game(self):
+        """Intenta cargar la matriz del mapa desde game.terrain_map (preferido),
+        luego desde game.tilemap (compatibilidad). Si falla, no sobreescribe."""
+        g = self.game
+
+        # preferimos terrain_map (nueva estructura)
+        tmap = getattr(g, "terrain_map", None)
+        if tmap:
+            matrix = getattr(tmap, "matrix", None)
+            cols = getattr(tmap, "cols", None)
+            rows = getattr(tmap, "rows", None)
+            tile_size = getattr(tmap, "tile_size", None)
+            if matrix:
+                self.set_map(matrix)
+                if cols and rows:
+                    self.cols = cols
+                    self.rows = rows
+                if tile_size:
+                    self.tile_size_world = tile_size
+                return
+
+        # fallback antiguo: tilemap
+        tmap = getattr(g, "tilemap", None)
+        if tmap:
+            matrix = getattr(tmap, "matrix", None)
+            cols = getattr(tmap, "cols", None)
+            rows = getattr(tmap, "rows", None)
+            tile_size = getattr(tmap, "tile_size", None)
+            if matrix:
+                self.set_map(matrix)
+                if cols and rows:
+                    self.cols = cols
+                    self.rows = rows
+                if tile_size:
+                    self.tile_size_world = tile_size
+                return
+
+        # si ninguno presente, intentar inferir de object_map (poco probable)
+        omap = getattr(g, "object_map", None)
+        if omap:
+            matrix = getattr(omap, "matrix", None)
+            if matrix:
+                self.set_map(matrix)
+                ts = getattr(omap, "tile_size", None)
+                if ts:
+                    self.tile_size_world = ts
+
+    # --------------------------
     def _ensure_explored_size(self):
         if self.cols <= 0 or self.rows <= 0:
             return
         if not self.explored or len(self.explored) != self.rows or len(self.explored[0]) != self.cols:
             self.explored = [[False for _ in range(self.cols)] for _ in range(self.rows)]
 
+    # --------------------------
     def set_map(self, matrix):
-        """Asignar/actualizar la matriz del mapa (lista de listas)."""
+        """Asignar/actualizar la matriz del mapa (lista de listas o lista de strings)."""
         if matrix is None:
             return
-        self.map_matrix = [list(r) if isinstance(r, str) else r for r in matrix]
+
+        # normalizar: cada fila -> lista de caracteres (strings de 1 char)
+        normalized = []
+        for row in matrix:
+            if isinstance(row, str):
+                normalized.append(list(row))
+            else:
+                # si es lista de strings/char, asumimos ya correcto
+                normalized.append([str(c) for c in row])
+        if not normalized:
+            return
+
+        self.map_matrix = normalized
         self.rows = len(self.map_matrix)
         self.cols = len(self.map_matrix[0]) if self.rows else 0
+
+        # si el juego tiene tile_size en terrain_map, úsalo
+        tmap = getattr(self.game, "terrain_map", None) or getattr(self.game, "tilemap", None)
+        if tmap and hasattr(tmap, "tile_size"):
+            try:
+                self.tile_size_world = int(getattr(tmap, "tile_size"))
+            except Exception:
+                pass
+
         self._ensure_explored_size()
 
+    # --------------------------
     def world_to_map(self, wx: float, wy: float, width: int, height: int, margin: int):
         """
         Convierte coordenadas world (px) a coordenadas de minimapa (px).
         Mantiene escala del mundo completo comprimido dentro del minimapa area (width x height).
         """
-        # evitar división por cero
+        # evitar división por cero usando WORLD_WIDTH/HEIGHT
         mx = int(wx * (width / max(1, WORLD_WIDTH))) + margin
         my = int(wy * (height / max(1, WORLD_HEIGHT))) + margin
         mx = max(margin, min(margin + width, mx))
         my = max(margin, min(margin + height, my))
         return mx, my
 
+    # --------------------------
     def recompute_positions(self, width: int, height: int, margin: int):
         """
         Recalcula posiciones en px para el minimapa de player, zombies y upgrades.
@@ -88,10 +156,10 @@ class MiniMapData:
         game = self.game
 
         # asegurar que map_matrix/explored existen y tienen tamaño correcto
-        if not self.map_matrix and hasattr(game, "tilemap") and game.tilemap:
-            self.set_map(game.tilemap.matrix)
+        if (not self.map_matrix) and hasattr(game, "terrain_map") and game.terrain_map:
+            self._load_map_from_game()
 
-        # Player
+        # Player (si existe)
         player = getattr(game, "player", None)
         if player and hasattr(player, "pos"):
             self._player_pos = self.world_to_map(player.pos.x, player.pos.y, width, height, margin)
@@ -141,16 +209,18 @@ class MiniMapRenderer:
         # surface total incluye margenes
         self.surface = pygame.Surface((self.width + 2 * self.margin, self.height + 2 * self.margin), pygame.SRCALPHA)
         self._terrain_surf_cache = None  # superficie con colores de terreno (no fog)
+        self._cached_cols = 0
+        self._cached_rows = 0
         self.pulse_timer = 0
         self.screen_rect = pygame.Rect(0, 0, self.width + 2 * self.margin, self.height + 2 * self.margin)
 
+    # --------------------------
     def _build_terrain_surface(self, map_matrix, cols, rows):
         """
         Construye (o reconstruye) una superficie con el terreno completo escalado a minimap area.
         NO aplica fog — fog se aplica dinámicamente en draw() usando explored grid.
         """
         if not map_matrix or cols <= 0 or rows <= 0:
-            # vacía
             surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
             surf.fill((0, 0, 0))
             return surf
@@ -163,14 +233,18 @@ class MiniMapRenderer:
 
         for ty in range(rows):
             for tx in range(cols):
-                ch = map_matrix[ty][tx].upper() if ty < len(map_matrix) and tx < len(map_matrix[ty]) else "G"
-                color = TERRAIN_COLOR.get(ch, TERRAIN_COLOR.get("", (100,100,100)))
-                # rect en float para mejor escalado final
+                # seguridad: acceder sólo si existe la fila/col
+                ch = "G"
+                if ty < len(map_matrix) and tx < len(map_matrix[ty]):
+                    val = map_matrix[ty][tx]
+                    ch = val.upper() if isinstance(val, str) and val else str(val).upper()
+                color = TERRAIN_COLOR.get(ch, TERRAIN_COLOR.get("", (100, 100, 100)))
                 r = pygame.Rect(int(tx * tile_w), int(ty * tile_h), int(math.ceil(tile_w)), int(math.ceil(tile_h)))
                 surf.fill(color, r)
 
         return surf
 
+    # --------------------------
     def draw(self, surface, data: MiniMapData, position: str = "topright"):
         # recompute positions done by caller
         self.pulse_timer += 0.1
@@ -183,15 +257,26 @@ class MiniMapRenderer:
         # reconfirm map_matrix
         if not data.map_matrix or data.cols <= 0 or data.rows <= 0:
             # nothing to draw but background and player
-            self.surface.fill((0,0,0,0))
+            self.surface.fill((0, 0, 0, 0))
+            self._terrain_surf_cache = None
         else:
             # build terrain cache if necessary or if dims changed
-            if self._terrain_surf_cache is None or self._terrain_surf_cache.get_width() != self.width or self._terrain_surf_cache.get_height() != self.height:
+            rebuild = False
+            if self._terrain_surf_cache is None:
+                rebuild = True
+            elif self._cached_cols != data.cols or self._cached_rows != data.rows:
+                rebuild = True
+            elif self._terrain_surf_cache.get_width() != self.width or self._terrain_surf_cache.get_height() != self.height:
+                rebuild = True
+
+            if rebuild:
                 try:
                     self._terrain_surf_cache = self._build_terrain_surface(data.map_matrix, data.cols, data.rows)
+                    self._cached_cols = data.cols
+                    self._cached_rows = data.rows
                 except Exception:
                     self._terrain_surf_cache = pygame.Surface((self.width, self.height))
-                    self._terrain_surf_cache.fill((0,0,0))
+                    self._terrain_surf_cache.fill((0, 0, 0))
 
         # limpiar surface
         self.surface.fill((0, 0, 0, 0))
@@ -224,21 +309,28 @@ class MiniMapRenderer:
 
             for ty in range(data.rows):
                 for tx in range(data.cols):
-                    if not data.explored[ty][tx]:
+                    # Si explorado -> no fog; si no explorado -> pintar fog encima
+                    if not data.explored or ty >= len(data.explored) or tx >= len(data.explored[ty]) or not data.explored[ty][tx]:
                         rx = int(self.margin + tx * tile_w)
                         ry = int(self.margin + ty * tile_h)
                         self.surface.blit(fog, (rx, ry))
 
         # Upgrades (solo si su tile explorado)
-        for ux, uy in data._upgrade_positions:
-            pygame.draw.circle(self.surface, (30, 100, 200, 120), (ux, uy), 5)
-            pygame.draw.circle(self.surface, (80, 160, 255), (ux, uy), 3)
-            pygame.draw.circle(self.surface, (150, 200, 255), (ux, uy), 1)
+        for ux, uy in getattr(data, "_upgrade_positions", []):
+            try:
+                pygame.draw.circle(self.surface, (30, 100, 200, 120), (ux, uy), 5)
+                pygame.draw.circle(self.surface, (80, 160, 255), (ux, uy), 3)
+                pygame.draw.circle(self.surface, (150, 200, 255), (ux, uy), 1)
+            except Exception:
+                pass
 
         # Zombies (solo si su tile explorado)
-        for zx, zy in data._zombie_positions:
-            pygame.draw.circle(self.surface, (200, 40, 40, 150), (zx, zy), 4)
-            pygame.draw.circle(self.surface, (255, 80, 80), (zx, zy), 2)
+        for zx, zy in getattr(data, "_zombie_positions", []):
+            try:
+                pygame.draw.circle(self.surface, (200, 40, 40, 150), (zx, zy), 4)
+                pygame.draw.circle(self.surface, (255, 80, 80), (zx, zy), 2)
+            except Exception:
+                pass
 
         # Jugador (siempre visible)
         px, py = data._player_pos
@@ -283,12 +375,21 @@ class MiniMap:
         except Exception:
             self.vision_radius = 3
 
-        # Si el juego ya generó tilemap, sincronizamos la matriz
-        if hasattr(game, "tilemap") and game.tilemap:
-            self.data.set_map(game.tilemap.matrix)
-            # inicializar exploración: opcional marcar la posición inicial del player
-            self.reveal_around_player(force=True)
+        # Sincronizar la matriz si el juego ya generó terrain_map o tilemap
+        self.data._load_map_from_game()
 
+        # Si aún no hay map_matrix, crear un mapa mínimo para evitar fallos y mostrar algo
+        if not self.data.map_matrix:
+            # fallback: generamos un mapa de 1x1 grass para evitar errores
+            self.data.set_map([["G"]])
+
+        # inicializar exploración y revelar alrededor del jugador inicial
+        self.data._ensure_explored_size()
+        self.reveal_around_player(force=True)
+        # forzar primeras posiciones
+        self.data.recompute_positions(self.renderer.width, self.renderer.height, self.renderer.margin)
+
+    # --------------------------
     def update_if_needed(self):
         now = pygame.time.get_ticks()
         if now - self._last_update_ms >= self.update_interval_ms:
@@ -296,6 +397,7 @@ class MiniMap:
             self.data.recompute_positions(self.renderer.width, self.renderer.height, self.renderer.margin)
             self._last_update_ms = now
 
+    # --------------------------
     def reveal_around_player(self, force: bool = False):
         """
         Revela tiles dentro de un círculo de radio self.vision_radius alrededor del jugador.
@@ -317,11 +419,11 @@ class MiniMap:
         changed = False
 
         # círculo: usamos distancia euclidiana en coordenadas de tiles
-        for dy in range(-r, r+1):
+        for dy in range(-r, r + 1):
             ty = tile_y + dy
             if ty < 0 or ty >= self.data.rows:
                 continue
-            for dx in range(-r, r+1):
+            for dx in range(-r, r + 1):
                 tx = tile_x + dx
                 if tx < 0 or tx >= self.data.cols:
                     continue
@@ -330,14 +432,12 @@ class MiniMap:
                         self.data.explored[ty][tx] = True
                         changed = True
 
-        # Si cambió la exploración, invalidar cache del terrain (no necesario en este impl,
-        # porque terrain cache no depende de explored) — pero podríamos usar para efectos
+        # Si cambió la exploración, actualizar posiciones (zombies/upgrades)
         if changed or force:
-            # actualizar posiciones para que zombies/upgrades en tiles recién revelados aparezcan
             self.data.recompute_positions(self.renderer.width, self.renderer.height, self.renderer.margin)
 
+    # --------------------------
     def draw(self, surface):
-        # actualizar si es necesario
+        # actualizar si es necesario y dibujar
         self.update_if_needed()
-        # pedir al renderer que dibuje todo
         self.renderer.draw(surface, self.data, self.position)

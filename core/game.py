@@ -18,7 +18,8 @@ from core.game_component.event_handler import EventHandler
 from core.game_component.updater import Updater
 
 from core.map_loader import load_map_file
-from core.terrain import TileMap
+from core.terrain import TerrainMap
+from core.object_map import ObjectMap
 
 
 class Game:
@@ -98,8 +99,13 @@ class Game:
         print(f"[DEBUG] Mapa cargado desde archivo: {cols}x{rows} tiles")
 
         # Crear tilemap
-        self.tilemap = TileMap(
+        self.terrain_map = TerrainMap(
             mapa,
+            tile_size=TERRAIN_TILE_SIZE
+        )
+
+        self.object_map = ObjectMap(
+            self.terrain_map.matrix,
             tile_size=TERRAIN_TILE_SIZE
         )
 
