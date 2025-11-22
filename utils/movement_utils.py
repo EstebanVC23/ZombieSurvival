@@ -1,3 +1,4 @@
+# utils/movement_utils.py
 import pygame
 
 class MovementUtils:
@@ -58,10 +59,35 @@ class MovementUtils:
         return pos
 
     # ---------------------------------------------------------
-    # Desvanecimiento de sprites (para muertes, impactos)
+    # Desvanecimiento de sprites
     # ---------------------------------------------------------
     @staticmethod
     def apply_fade(img, alpha):
         surf = img.copy()
         surf.set_alpha(alpha)
         return surf
+
+    # ---------------------------------------------------------
+    # Colisión simple contra hitboxes
+    # ---------------------------------------------------------
+    @staticmethod
+    def push_out(rect, hitbox):
+        """Empuja rect fuera de un hitbox sólido."""
+        dx_left   = rect.right  - hitbox.left
+        dx_right  = hitbox.right - rect.left
+        dy_top    = rect.bottom - hitbox.top
+        dy_bottom = hitbox.bottom - rect.top
+
+        min_dx = min(dx_left, dx_right)
+        min_dy = min(dy_top, dy_bottom)
+
+        if min_dx < min_dy:
+            if dx_left < dx_right:
+                rect.right = hitbox.left
+            else:
+                rect.left = hitbox.right
+        else:
+            if dy_top < dy_bottom:
+                rect.bottom = hitbox.top
+            else:
+                rect.top = hitbox.bottom
