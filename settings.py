@@ -26,13 +26,13 @@ WORLD_HEIGHT = 4000
 # ===================================================
 
 # --- Movimiento ---
-PLAYER_SPEED = 1000  # Velocidad de movimiento en píxeles/segundo
+PLAYER_SPEED = 250  # Velocidad de movimiento en píxeles/segundo
 
 # --- Apariencia ---
 PLAYER_SIZE = 100  # Tamaño del sprite del jugador
 
 # --- Salud y Defensa ---
-PLAYER_BASE_HEALTH = 1      # Salud inicial del jugador
+PLAYER_BASE_HEALTH = 100      # Salud inicial del jugador
 PLAYER_BASE_ARMOR = 0         # Armadura inicial
 PLAYER_MAX_ARMOR = 100        # Capacidad máxima de armadura
 
@@ -44,8 +44,8 @@ PLAYER_MIN_DISTANCE_TO_ZOMBIE = 5  # Distancia mínima que el player debe manten
 # ===================================================
 
 # --- Estadísticas base del arma ---
-WEAPON_BASE_DAMAGE = 10000         # Daño por bala
-WEAPON_BASE_RPM = 1000             # Disparos por minuto
+WEAPON_BASE_DAMAGE = 20         # Daño por bala
+WEAPON_BASE_RPM = 100             # Disparos por minuto
 WEAPON_BASE_MAGAZINE = 12          # Capacidad del cargador
 WEAPON_BASE_RESERVE_AMMO = 100     # Munición de reserva
 WEAPON_BASE_RELOAD_TIME = 2.0      # Tiempo de recarga en segundos
