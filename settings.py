@@ -127,7 +127,7 @@ ZOMBIE_WANDER_CHANGE_DIR_CHANCE = 0.01
 ZOMBIE_WANDER_SPEED_MULT = 0.8
 ZOMBIE_REPULSION_RADIUS = 30
 ZOMBIE_REPULSION_FORCE = 20
-ZOMBIE_MIN_DISTANCE_TO_PLAYER = 30   # Distancia mínima que un zombie mantiene respecto al jugador
+ZOMBIE_MIN_DISTANCE_TO_PLAYER = 5  # Distancia mínima que un zombie mantiene respecto al jugador
 
 # Cooldown de ataque por tipo
 ZOMBIE_ATTACK_COOLDOWN = {
@@ -252,7 +252,7 @@ ZOMBIE_SCORE_VALUES = {
 # SONIDO DE ZOMBIES
 # ===================================================
 
-ZOMBIE_SOUND_DISTANCE = 500
+ZOMBIE_SOUND_DISTANCE = 1000
 ZOMBIE_SOUND_MIN_INTERVAL = 1.5
 ZOMBIE_SOUND_MAX_INTERVAL = 4.0
 
